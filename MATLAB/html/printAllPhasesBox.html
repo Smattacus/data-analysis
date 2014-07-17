@@ -1,0 +1,240 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>printAllPhasesBox</title><meta name="generator" content="MATLAB 7.14"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2013-08-30"><meta name="DC.source" content="printAllPhasesBox.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, tt, code { font-size:12px; }
+pre { margin:0px 0px 20px; }
+pre.error { color:red; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+
+  </style></head><body><div class="content"><pre class="codeinput"><span class="keyword">function</span> printAllPhasesBox(path)
+<span class="comment">%This function generates the square wave corresponding to the chopped</span>
+<span class="comment">%signal and plots the correlation over a single period.</span>
+<span class="comment">%</span>
+<span class="comment">% printAllPhases(path, parallel</span>
+<span class="comment">%</span>
+<span class="comment">% INPUTS:</span>
+<span class="comment">%   path     - Desired path to run in.</span>
+<span class="comment">%   parallel - Boolean to determine whether to use parallel statements</span>
+<span class="comment">%   nworkers - Number of workers to start up.</span>
+<span class="comment">%</span>
+<span class="comment">%This function assumes that the synchronization box has been used in order</span>
+<span class="comment">%to make sure that the laser chop is at 100 khz. This function is best used</span>
+<span class="comment">%to verify the phase of the laser in relation to a straight 100 khz square</span>
+<span class="comment">%wave.</span>
+<span class="comment">%</span>
+<span class="comment">%</span>
+
+cd(path);
+<span class="keyword">if</span> exist(<span class="string">'PhasePNG'</span>, <span class="string">'dir'</span>) == 0
+    mkdir <span class="string">PhasePNG</span>
+<span class="keyword">end</span>
+fns = dir(<span class="string">'*.h5'</span>);
+
+<span class="comment">%[fns centers deltas] = getChopInfo(list(1).name);</span>
+numcorrs = 10;
+S1 = zeros(size(fns,1), numcorrs+1);
+S2 = zeros(size(fns,1), numcorrs+1);
+phase = linspace(0, 2 * pi * 8 * 100e3, 1e6 * 8);
+phaxis = linspace(0, 2 * pi, numcorrs+1);
+
+<span class="keyword">for</span> i=1:size(fns,1)
+    fn = fns(i).name;
+    A = h5read(fn, <span class="string">'/PMT_DATA_8BIT'</span>);
+    s1 = sum(A(1:16, :));
+    s1 = s1 - mean(s1);
+    s2 = sum(A(17:32, :));
+    s2 = s2 - mean(s2);
+    <span class="comment">%Check which phase gives a maximum for the demodulated signal</span>
+    <span class="keyword">for</span> j=1:numcorrs+1
+        S1(i, j) = sum(square(phase + (j-1) * pi * 2 / numcorrs+1) .* s1);
+        S2(i, j) = sum(square(phase + (j-1) * pi * 2 / numcorrs+1) .* s2);
+    <span class="keyword">end</span>
+    h1 = figure(1); set(h1, <span class="string">'visible'</span>, <span class="string">'off'</span>);
+    plot(phaxis, S1(i,:)); title(<span class="string">'PMT #1 Square Wave Corr'</span>);
+    xlabel(<span class="string">' Displacement (radians)'</span>);
+    ylabel(<span class="string">'Correlation'</span>);
+    xcfn = sprintf(<span class="string">'PhasePNG/%s_PHASE_PMT1.png'</span>, strrep(fn, <span class="string">'.h5'</span>, <span class="string">''</span>));
+    print(h1, <span class="string">'-dpng'</span>, xcfn);
+    h2 = figure(2); set(h2, <span class="string">'visible'</span>, <span class="string">'off'</span>);
+    plot(phaxis, S2(i,:)); title(<span class="string">'PMT #2 Square Wave Corr'</span>);
+    xlabel(<span class="string">'Displacement (2 pi / 12)'</span>);
+    ylabel(<span class="string">'Correlation'</span>);
+    xcfn = sprintf(<span class="string">'PhasePNG/%s_PHASE_PMT2.png'</span>, strrep(fn, <span class="string">'.h5'</span>, <span class="string">''</span>));
+    print(h2, <span class="string">'-dpng'</span>, xcfn);
+<span class="keyword">end</span>
+
+<span class="comment">%{
+</span><span class="comment">if parallel == true
+</span><span class="comment">    matlabpool('open', nworkers);
+</span><span class="comment">
+</span><span class="comment">    parfor i=1:size(list, 1)
+</span><span class="comment">        fn = fns[i];
+</span><span class="comment">        A = h5read(fn, '/PMT_DATA_8BIT');
+</span><span class="comment">        s1 = sum(A(1:16, :));
+</span><span class="comment">        s2 = sum(A(17:32, :));
+</span><span class="comment">        ph1 = genPhase(s1, centers(i), deltas(i), 1e-6);
+</span><span class="comment">        ph2 = genPhase(s2, centers(i), deltas(i), 1e-6);
+</span><span class="comment">        %Check which phase gives a maximum for the demodulated signal
+</span><span class="comment">        for j=1:12
+</span><span class="comment">            S1(i, j) = sum(square(ph1 + j * pi * 2 / 12) .* s1);
+</span><span class="comment">            S2(i, j) = sum(square(ph2 + j * pi * 2 / 12) .* s2);
+</span><span class="comment">        end
+</span><span class="comment">        h1 = figure;
+</span><span class="comment">        h1 = plot(S1(i,:)); title('PMT #1 Square Wave Corr');
+</span><span class="comment">        xlabel(' Displacement (2pi / 12)');
+</span><span class="comment">        ylabel('Correlation');
+</span><span class="comment">        xcfn = sprintf('PhasePNG/%s_PHASE_PMT1.png', strrep(fn, '.h5', ''));
+</span><span class="comment">        print(h1, '-dpng', xcfn);
+</span><span class="comment">        h2 = figure;
+</span><span class="comment">        h2 = plot(S2(:,i); title('PMT #2 Square Wave Corr');
+</span><span class="comment">        xlabel('Displacement (2 pi / 12)');
+</span><span class="comment">        ylabel('Correlation');
+</span><span class="comment">        xcfn = sprintf('PhasePNG/%s_PHASE_PMT2.png', strrep(fn, '.h5', ''));
+</span><span class="comment">        print(h2, '-dpng', xcfn);
+</span><span class="comment">    end
+</span><span class="comment">    matlabpool('close');
+</span><span class="comment">    %}</span>
+</pre><pre class="codeoutput">Error using printAllPhasesBox (line 19)
+Not enough input arguments.</pre><p class="footer"><br>
+      Published with MATLAB&reg; 7.14<br></p></div><!--
+##### SOURCE BEGIN #####
+function printAllPhasesBox(path)
+%This function generates the square wave corresponding to the chopped
+%signal and plots the correlation over a single period.
+%
+% printAllPhases(path, parallel
+%
+% INPUTS: 
+%   path     - Desired path to run in.
+%   parallel - Boolean to determine whether to use parallel statements
+%   nworkers - Number of workers to start up.
+%
+%This function assumes that the synchronization box has been used in order
+%to make sure that the laser chop is at 100 khz. This function is best used
+%to verify the phase of the laser in relation to a straight 100 khz square
+%wave.
+%
+%
+
+cd(path);
+if exist('PhasePNG', 'dir') == 0
+    mkdir PhasePNG
+end
+fns = dir('*.h5');
+
+%[fns centers deltas] = getChopInfo(list(1).name);
+numcorrs = 10;
+S1 = zeros(size(fns,1), numcorrs+1);
+S2 = zeros(size(fns,1), numcorrs+1);
+phase = linspace(0, 2 * pi * 8 * 100e3, 1e6 * 8);
+phaxis = linspace(0, 2 * pi, numcorrs+1);
+
+for i=1:size(fns,1)
+    fn = fns(i).name;
+    A = h5read(fn, '/PMT_DATA_8BIT');
+    s1 = sum(A(1:16, :));
+    s1 = s1 - mean(s1);
+    s2 = sum(A(17:32, :));
+    s2 = s2 - mean(s2);
+    %Check which phase gives a maximum for the demodulated signal
+    for j=1:numcorrs+1
+        S1(i, j) = sum(square(phase + (j-1) * pi * 2 / numcorrs+1) .* s1);
+        S2(i, j) = sum(square(phase + (j-1) * pi * 2 / numcorrs+1) .* s2);
+    end
+    h1 = figure(1); set(h1, 'visible', 'off');
+    plot(phaxis, S1(i,:)); title('PMT #1 Square Wave Corr');
+    xlabel(' Displacement (radians)');
+    ylabel('Correlation');
+    xcfn = sprintf('PhasePNG/%s_PHASE_PMT1.png', strrep(fn, '.h5', ''));
+    print(h1, '-dpng', xcfn);
+    h2 = figure(2); set(h2, 'visible', 'off');
+    plot(phaxis, S2(i,:)); title('PMT #2 Square Wave Corr');
+    xlabel('Displacement (2 pi / 12)');
+    ylabel('Correlation');
+    xcfn = sprintf('PhasePNG/%s_PHASE_PMT2.png', strrep(fn, '.h5', ''));
+    print(h2, '-dpng', xcfn);
+end
+
+%{
+if parallel == true
+    matlabpool('open', nworkers);
+    
+    parfor i=1:size(list, 1)
+        fn = fns[i];
+        A = h5read(fn, '/PMT_DATA_8BIT');
+        s1 = sum(A(1:16, :));
+        s2 = sum(A(17:32, :));
+        ph1 = genPhase(s1, centers(i), deltas(i), 1e-6);
+        ph2 = genPhase(s2, centers(i), deltas(i), 1e-6);
+        %Check which phase gives a maximum for the demodulated signal
+        for j=1:12
+            S1(i, j) = sum(square(ph1 + j * pi * 2 / 12) .* s1);
+            S2(i, j) = sum(square(ph2 + j * pi * 2 / 12) .* s2);
+        end
+        h1 = figure; 
+        h1 = plot(S1(i,:)); title('PMT #1 Square Wave Corr'); 
+        xlabel(' Displacement (2pi / 12)');
+        ylabel('Correlation');
+        xcfn = sprintf('PhasePNG/%s_PHASE_PMT1.png', strrep(fn, '.h5', ''));
+        print(h1, '-dpng', xcfn);
+        h2 = figure;
+        h2 = plot(S2(:,i); title('PMT #2 Square Wave Corr');
+        xlabel('Displacement (2 pi / 12)');
+        ylabel('Correlation');
+        xcfn = sprintf('PhasePNG/%s_PHASE_PMT2.png', strrep(fn, '.h5', ''));
+        print(h2, '-dpng', xcfn);
+    end
+    matlabpool('close');
+    %}
+
+##### SOURCE END #####
+--></body></html>
