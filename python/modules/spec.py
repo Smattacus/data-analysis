@@ -5,6 +5,7 @@
 
 import scipy as sp
 from scipy import fftpack as fp
+from numpy import size, linspace
 
 #These functions assume 1d arrays.
 
@@ -16,8 +17,8 @@ backwards). This is so that Perseval's rule may be used easily.
     n = size(x)
     f0 = 1/abs(n * dt)
     P = sp.fftpack.fft(x)
-    f = (linspace(0, n, n) - n/2) * f0
-    f = fp.fftshift(f)
+    #Generate an array 1:N, subtract (N + 1) /2 if odd, (N+2)/2 if even.
+    f = (linspace(1, n, n) - (n + (1 + (n % 2 ==0 )))/2) * f0
     P = fp.fftshift(P)
     return f, P
     
