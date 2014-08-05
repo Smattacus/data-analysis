@@ -46,12 +46,10 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
      *
      */
     int i=0, j=0;
-    double temp;
-
+    printf("tau1 is %d, tau2 is %d\n", tau1, tau2);
     for (i=(-tau1+1); i < tau1; i++) {
         for (j=(-tau2 + 1); j < tau2; j++) {
-            xcorr[i + tau1 + j * (2 * tau1 - 1)] = xcorr_sum(f1, f2, n_f1, i, j); 
-            printf("Output is %d", xcorr[i + tau1 + j * (2 * tau1 -1));
+            xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_sum(f1, f2, n_f1, i, j); 
         }
     }
     return;
@@ -64,11 +62,15 @@ double xcorr_sum(double *f1, double *f2, int n, int tau1, int tau2) {
     int i, nf, ni;
     double sum = 0;
 
+//    for (i=0; i < n; i++) printf("f1 = %f, f2 = %f\n", f1[i], f2[i]);
     //if tau1 > tau2, make ni = tau1, else ni = tau2
-    if (tau1 > 0 && tau2 > 0) ni = (tau1 > tau2) ? tau1 : tau2;
+    if (tau1 > 0 && tau2 > 0) {
+        ni = (tau1 > tau2) ? tau1 : tau2;
+        nf = n;
+    }
     else if (tau1 <= 0 && tau2 <= 0)  {
         ni = 0;
-        nf = abs(tau1);
+        nf = (tau1 < tau2) ? n - abs(tau1) : n - abs(tau2);
     }
     //One positive, one negative, set ni = positive tau
     else {
@@ -80,13 +82,15 @@ double xcorr_sum(double *f1, double *f2, int n, int tau1, int tau2) {
             ni = tau2;
             nf = n - abs(tau1);
         }
-    
     }
-
+    printf("ni = %d, nf = %d\n", ni, nf);
+    printf("\nFor tau1 = %d, tau2 = %d, we are summing over:\n", tau1, tau2);
     for (i=ni; i < nf; i++) {
         sum += f1[i] * f1[i - tau1] * f2[i - tau2]; 
+        printf("f1(%d) * f1(%d) * f2(%d)\n", i, i - tau1, i - tau2);
     }
-    sum /= (n - ni + 1);
+    printf("Sum done. \n\n");
+    printf("sum = %f\n", sum);
     return sum;
 }
 
