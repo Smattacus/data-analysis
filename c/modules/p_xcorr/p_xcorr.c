@@ -21,7 +21,9 @@
 void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int tau2, double *xcorr) {
     /*
      *This program finds the three point correlation for [+/- tau1, +/- tau2].
-     *INPUTS:
+     *
+     *
+     * INPUTS:
      *
      *  double *f1 - First data array to be correlated.
      *  double *f2 - Second data array to be correlated.
@@ -92,6 +94,42 @@ double xcorr_sum(double *f1, double *f2, int n, int tau1, int tau2) {
     printf("Sum done. \n\n");
     printf("sum = %f\n", sum);
     return sum;
+}
+
+double xcorr_unbiased(double *f1, double *f2, int n, int tau1, int tau2) {
+    //Returns the single element three point correlation at the point given by
+    //tau1, tau2.
+    
+    int i, nf, ni;
+    double sum = 0;
+
+    //if tau1 > tau2, make ni = tau1, else ni = tau2
+    if (tau1 > 0 && tau2 > 0) {
+        ni = (tau1 > tau2) ? tau1 : tau2;
+        nf = n;
+    }
+    else if (tau1 <= 0 && tau2 <= 0)  {
+        ni = 0;
+        nf = (tau1 < tau2) ? n - abs(tau1) : n - abs(tau2);
+    }
+    //One positive, one negative, set ni = positive tau
+    else {
+    //set ni = positive tau, nf = n - abs(negative tau)
+        if (tau1 > tau2) {
+            ni = tau1;
+            nf = n - abs(tau2);
+        } else {
+            ni = tau2;
+            nf = n - abs(tau1);
+        }
+    }
+    for (i=ni; i < nf; i++) {
+        sum += f1[i] * f1[i - tau1] * f2[i - tau2]; 
+    }
+    sum = sum / (nf - ni)
+    return sum;
+}
+
 }
 
 
