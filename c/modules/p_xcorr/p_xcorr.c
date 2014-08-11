@@ -16,6 +16,8 @@
  * ***/
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
+
 #include "p_xcorr.h"
 
 void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int tau2, 
@@ -53,20 +55,27 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
      * the future.
      *
      */
-    int i=0, j=0;
+    int i=0, j=0, nthreads;
     printf("tau1 is %d, tau2 is %d\n", tau1, tau2);
     if (unbiased) {
-    for (i=(-tau1+1); i < tau1; i++) {
-        for (j=(-tau2 + 1); j < tau2; j++) {
-            xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_unbiased(f1, f2, n_f1, i, j);
-        }
-    } 
-    }else  {
-        for(i=(-tau1+1);i<tau1;i++) {
-            for(j=(-tau2 +1);j<tau2;j++) {
-               xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_sum(f1, f2, n_f1, i, j); 
+            #pragma omp parallel
+        {
+            nthreads = omp_get_num_threads();
+            printf("Number of threads is %d",nthreads);
+            #pragma omp for
+            for (i=(-tau1+1); i < tau1; i++) {
+                for (j=(-tau2 + 1); j < tau2; j++) {
+                xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_unbiased(f1, f2, n_f1, i, j);
+                }
             }
         }
+    }else  {
+            #pragma omp parallel for
+            for(i=(-tau1+1);i<tau1;i++) {
+                for(j=(-tau2 +1);j<tau2;j++) {
+                    xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_sum(f1, f2, n_f1, i, j); 
+                }
+            }
     }
     return;
 }
