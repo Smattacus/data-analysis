@@ -61,7 +61,7 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
             #pragma omp parallel
         {
             nthreads = omp_get_num_threads();
-            printf("Number of threads is %d",nthreads);
+            printf("Number of threads is %d\n",nthreads);
             #pragma omp for
             for (i=(-tau1+1); i < tau1; i++) {
                 for (j=(-tau2 + 1); j < tau2; j++) {
