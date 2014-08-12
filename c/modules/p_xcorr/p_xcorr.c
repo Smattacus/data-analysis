@@ -16,11 +16,17 @@
  * ***/
 #include <stdio.h>
 #include <stdlib.h>
+#include <omp.h>
+
 #include "p_xcorr.h"
 
-void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int tau2, double *xcorr) {
+void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int tau2, 
+                int unbiased, double *xcorr) {
     /*
      *This program finds the three point correlation for [+/- tau1, +/- tau2].
+     *
+     *void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int tau2, 
+     *                      int unbiased, double *xcorr)
      *
      *
      * INPUTS:
@@ -31,6 +37,8 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
      *  int n_f2    - Size of second data array.
      *  int tau1    - Max displacement in both directions for f1.
      *  int tau2    - Max displacement in both directions for f2.
+     *  int unbiased - Boolean choosing unbiased (unbiased = 1) or unnormalized
+     *  xcorr.
      *
      *  OUTPUTS:
      *
@@ -47,12 +55,27 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
      * the future.
      *
      */
-    int i=0, j=0;
+    int i=0, j=0, nthreads;
     printf("tau1 is %d, tau2 is %d\n", tau1, tau2);
-    for (i=(-tau1+1); i < tau1; i++) {
-        for (j=(-tau2 + 1); j < tau2; j++) {
-            xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_sum(f1, f2, n_f1, i, j); 
+    if (unbiased) {
+            #pragma omp parallel
+        {
+            nthreads = omp_get_num_threads();
+            printf("Number of threads is %d\n",nthreads);
+            #pragma omp for
+            for (i=(-tau1+1); i < tau1; i++) {
+                for (j=(-tau2 + 1); j < tau2; j++) {
+                xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_unbiased(f1, f2, n_f1, i, j);
+                }
+            }
         }
+    }else  {
+            #pragma omp parallel for
+            for(i=(-tau1+1);i<tau1;i++) {
+                for(j=(-tau2 +1);j<tau2;j++) {
+                    xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_sum(f1, f2, n_f1, i, j); 
+                }
+            }
     }
     return;
 }
@@ -126,10 +149,9 @@ double xcorr_unbiased(double *f1, double *f2, int n, int tau1, int tau2) {
     for (i=ni; i < nf; i++) {
         sum += f1[i] * f1[i - tau1] * f2[i - tau2]; 
     }
-    sum = sum / (nf - ni)
+    sum = sum / (nf - ni);
     return sum;
 }
 
-}
 
 
