@@ -42,6 +42,8 @@ xcs = zeros(size(D1, 1), size(D1,2) * 2 - 1);
 xcs_lifscaled = xcs;
 ac_ch1 = xcs;
 ac_ch2 = xcs;
+D1_scale = D1 * 0;
+D2_scale = D2 * 0;
 for i=1:size(D1, 1);
    D1(i,:) = D1(i,:) - mean(D1(i,:));
    D2(i,:) = D2(i,:) - mean(D2(i,:));
@@ -49,6 +51,8 @@ for i=1:size(D1, 1);
    xcs_lifscaled(i,:) = xcorr(D1(i,:) / ave1(i), D2(i,:) / ave2(i), 'unbiased');
    ac_ch1(i,:) = xcorr(D1(i,:), 'unbiased');
    ac_ch2(i,:) = xcorr(D2(i,:), 'unbiased');
+   D1_scale(i,:) = D1(i,:) / ave1(i);
+   D2_scale(i,:) = D2(i,:) / ave2(i);
 end
 xcmean = (mean(xcs));
 xcsmean_lifscaled = mean(xcs_lifscaled);
@@ -61,3 +65,6 @@ ac_ch2_std = std(ac_ch2);
 
 save(savename, 'xcmean', 'xc_std', 'ac_ch1_mn', 'ac_ch2_mn', 'ac_ch1_std', ...
     'ac_ch2_std', 'ave1', 'ave2', 'xcsmean_lifscaled', 'xc_std_lifscaled', 'list_data');
+%Secondary: Save the normalized D1 and D2 matrices.
+savename_diffs = strrep(savename, '.mat', '_DiffArrays.mat');
+save(savename_diffs, 'D1_scale', 'D2_scale', 'ave1', 'ave2');
