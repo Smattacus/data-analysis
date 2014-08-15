@@ -147,9 +147,10 @@ double xcorr_unbiased(double *f1, double *f2, int n, int tau1, int tau2) {
         }
     }
     for (i=ni; i < nf; i++) {
-        sum += f1[i] * f1[i - tau1] * f2[i - tau2]; 
+        sum += f1[i] * f1[i - tau1] * f2[i - tau2];
     }
     sum = sum / (nf - ni);
+    printf("tau1 = %d, tau2 = %d, sum = %f\n", tau1, tau2,  sum);
     return sum;
 }
 
