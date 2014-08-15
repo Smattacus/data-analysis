@@ -30,10 +30,10 @@ def getAvgCorr(data, delta_t):
         f2 = d2.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         #Use the stronger signal as f1 in f1 * f1(t - tau1) * f2(t - tau2)
         if a1 >= a2:
-            mylib.corr3_parallel(f1, f2, size(d1), size(d2), tau1, tau2, 1, bigarr)
+            mylib.corr3_parallel(f1, f2, np.size(d1), np.size(d2), tau1, tau2, 1, bigarr)
         else:
-            mylib.corr3_parallel(f2, f1, size(d2), size(d1), tau1, tau2, 1, bigarr)
-        runavgarr +=  runavgarr + bigarr
+            mylib.corr3_parallel(f2, f1, np.size(d2), np.size(d1), tau1, tau2, 1, bigarr)
+        runavgarr +=  runavgarr + np.ctypeslib.as_array(bigarr)
     runavgarr /= np.size(data['ave1'])
     runavgarr = np.ctypeslib.as_array(runavgarr).reshape(tau1,
             tau2).transpose()

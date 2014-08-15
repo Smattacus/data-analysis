@@ -59,14 +59,10 @@ else:
 
 print("Starting corr loops.")
 print("np.size = " + str(np.size(fl)))
+print(fl)
+print(os.getcwd())
 #TAU VALUE
 delta_t = 1000
-if np.size(fl) == 1:
-    data = io.loadmat(fl)
-    threepoint = tpc.getAvgcorr(data, delta_t)
-    out = string.replace(fl, '.mat', '_3corr.mat')
-    print("Will save to " + out)
-    io.savemat(out, {'tpcorr', threepoint})
 for x in fl:
     data = io.loadmat(x)
     threepoint = tpc.getAvgCorr(data, delta_t)
