@@ -35,6 +35,5 @@ def getAvgCorr(data, delta_t):
             mylib.corr3_parallel(f2, f1, np.size(d2), np.size(d1), tau1, tau2, 1, bigarr)
         runavgarr +=  runavgarr + np.ctypeslib.as_array(bigarr)
     runavgarr /= np.size(data['ave1'])
-    runavgarr = np.ctypeslib.as_array(runavgarr).reshape(tau1,
-            tau2).transpose()
+    runavgarr = runavgarr.reshape(2 * delta_t - 1, 2 * delta_t - 1).transpose()
     return runavgarr
