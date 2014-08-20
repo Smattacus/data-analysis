@@ -24,7 +24,7 @@ def getAvgCorr(d, delta_t):
     runavgarr = np.zeros(( 2 * delta_t - 1) **2)
     bigarr = arrlarge()
     #Do a little magic with zip()
-    for d1, d2, a1, a2 in zip(data['D1_scale'], data['D2_scale'],
+    for d1, d2, a1, a2 in zip(d['D1_scale'], d['D2_scale'],
             data['ave1'].transpose(), data['ave2'].transpose()):
         f1 = d1.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         f2 = d2.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
