@@ -9,7 +9,7 @@ def getAvgCorr(d, delta_t):
     #Runs the three point correlation using my C library. 
     #
     #INPUTS: 
-    #   data    - Matlab dict containing "D1_scale", "D2_scale", "ave1", "ave2"
+    #   d    - Matlab dict containing "D1_scale", "D2_scale", "ave1", "ave2"
     #   delta_t - tau value to correlate by. Matrix returned will be
     #               [2 * delta_t - 1] x [2 * delta_t - 1]
     #
@@ -34,6 +34,6 @@ def getAvgCorr(d, delta_t):
         else:
             mylib.corr3_parallel(f2, f1, np.size(d2), np.size(d1), tau1, tau2, 1, bigarr)
         runavgarr +=  runavgarr + np.ctypeslib.as_array(bigarr)
-    runavgarr /= np.size(data['ave1'])
+    runavgarr /= np.size(d['ave1'])
     runavgarr = runavgarr.reshape(2 * delta_t - 1, 2 * delta_t - 1).transpose()
     return runavgarr
