@@ -24,9 +24,8 @@ from scipy import io
 import os
 import string
 import glob
-import ctypes
 
-import threeptcorr_helpers 
+import threeptcorr_helpers as tpc 
 
 ####################################
 #
@@ -38,19 +37,16 @@ import threeptcorr_helpers
 #list. Otherwise it will run a ls command and get the files from the fs.
 if np.size(sys.argv) == 1:
     ################CHANGE HERE#####################
-    search = '*printMat.sh'
+    search = '*DiffArrays.mat'
     p = '/Users/smattingly/Data/5-28-2014/XCMeans/' 
 elif np.size(sys.argv) == 3:
     search = sys.argv[1]
     p = sys.argv[2]
+    print("search read in is: " + search)
+    print("Input path is: " + p)
 
-print("Hello world!")
-
-#Uncomment this line to use search as a list of files.
-#search = ['fname1', 'fname2', 'fname3', ...]
-
-#If there is only one element in the search list, search by that element name.
 #If it is a filename, glob.glob(search) will just return that filename.
+#If there is only one element in the search list, search by that element name.
 if np.size(search) == 1:
     os.chdir(p)
     fl = glob.glob(search)
@@ -58,19 +54,20 @@ else:
     os.chdir(p)
     fl = search
 
+
 ####################################
 
+print("Starting corr loops.")
+print("np.size = " + str(np.size(fl)))
+print(fl)
+print(os.getcwd())
 #TAU VALUE
 delta_t = 1000
-if np.size(fl) == 1:
-    data = io.loadmat(fl)
-    threepoint = getAvgcorr(data, delta_t)
-    out = string.replace(fl, '.mat', '_3corr.mat')
-    io.savemat(out, {'tpcorr', threepoint})
 for x in fl:
     data = io.loadmat(x)
-    threepoint = getAvgCorr(data, delta_t)
-    out = string.replcae(x, '.mat', '_3corr.mat')
+    threepoint = tpc.getAvgCorr(data, delta_t)
+    out = string.replace(x, '.mat', '_3corr.mat')
+    print("Will save to " + out)
     io.svaemat(out, {'tpcorr', threepoint})
 
 
