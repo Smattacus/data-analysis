@@ -3,7 +3,7 @@ mylib = ctypes.cdll.LoadLibrary('/Users/smattingly/Programs/data-analysis/c/modu
 
 import numpy as np
 
-def getAvgCorr(data, delta_t):
+def getAvgCorr(d, delta_t):
     tau1 = c_int(delta_t)
     tau2 = c_int(delta_t)
     arrlarge = c_double * ((2 * delta_t - 1)**2)
