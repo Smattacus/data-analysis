@@ -25,7 +25,7 @@ def getAvgCorr(d, delta_t):
     bigarr = arrlarge()
     #Do a little magic with zip()
     for d1, d2, a1, a2 in zip(d['D1_scale'], d['D2_scale'],
-            data['ave1'].transpose(), data['ave2'].transpose()):
+            d['ave1'].transpose(), d['ave2'].transpose()):
         f1 = d1.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         f2 = d2.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         #Use the stronger signal as f1 in f1 * f1(t - tau1) * f2(t - tau2)
