@@ -33,7 +33,7 @@ def getAvgCorr(d, delta_t):
         f1 = d1.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         f2 = d2.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         #Use the stronger signal as f1 in f1 * f1(t - tau1) * f2(t - tau2)
-        if avect >= np.size(d['ave1'])/2:.
+        if avect >= np.size(d['ave1'])/2:
             mylib.corr3_parallel(f1, f2, np.size(d1), np.size(d2), tau1, tau2, 1, bigarr)
         else:
             mylib.corr3_parallel(f2, f1, np.size(d2), np.size(d1), tau1, tau2, 1, bigarr)
