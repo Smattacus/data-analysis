@@ -68,6 +68,4 @@ for x in fl:
     threepoint = tpc.getAvgCorr(data, delta_t)
     out = string.replace(x, '.mat', '_3corr.mat')
     print("Will save to " + out)
-    io.svaemat(out, {'tpcorr', threepoint})
-
-
+    io.savemat(out, {'tpcorr': threepoint})
