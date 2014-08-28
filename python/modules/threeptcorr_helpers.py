@@ -30,8 +30,8 @@ def getAvgCorr(d, delta_t):
     #Do a little magic with zip(). np.array() is called to make contiguous
     #copies, otherwise this breaks big time.
     for d1, d2, a1, a2 in zip(
-            np.array(d['D1_scale'], 'C'),
-            np.array(d['D2_scale'], 'C'),
+            np.array(d['D1_scale'], order='C'),
+            np.array(d['D2_scale'], order='C'),
             d['ave1'].transpose(), 
             d['ave2'].transpose()):
         f1 = d1.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
