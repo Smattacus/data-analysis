@@ -27,9 +27,13 @@ def getAvgCorr(d, delta_t):
     for x, y in zip(d['ave1'].transpose(), d['ave2'].transpose()):
         if x > y:
             avect += 1
-    #Do a little magic with zip()
-    for d1, d2, a1, a2 in zip(d['D1_scale'], d['D2_scale'],
-            d['ave1'].transpose(), d['ave2'].transpose()):
+    #Do a little magic with zip(). np.array() is called to make contiguous
+    #copies, otherwise this breaks big time.
+    for d1, d2, a1, a2 in zip(
+            np.array(d['D1_scale'], 'C'),
+            np.array(d['D2_scale'], 'C'),
+            d['ave1'].transpose(), 
+            d['ave2'].transpose()):
         f1 = d1.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         f2 = d2.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         #Use the stronger signal as f1 in f1 * f1(t - tau1) * f2(t - tau2)
@@ -37,7 +41,7 @@ def getAvgCorr(d, delta_t):
             mylib.corr3_parallel(f1, f2, np.size(d1), np.size(d2), tau1, tau2, 1, bigarr)
         else:
             mylib.corr3_parallel(f2, f1, np.size(d2), np.size(d1), tau1, tau2, 1, bigarr)
-        runavgarr +=  runavgarr + np.ctypeslib.as_array(bigarr)
+        runavgarr +=  runavgarr + np.array(bigarr)
     runavgarr /= np.size(d['ave1'])
     runavgarr = runavgarr.reshape(2 * delta_t - 1, 2 * delta_t - 1).transpose()
     return runavgarr
