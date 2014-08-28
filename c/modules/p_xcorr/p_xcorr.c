@@ -48,32 +48,35 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
      * The memory must be allocated for double *xcorr before this function is
      * run.
      *
-     * It is recommended to reshape the output xcorr according to (2 * tau1 -
-     * 1, 2 * tau2 - 1).
+     * It is recommended to reshape the output xcorr according to (2 * tau1 +
+     * 1, 2 * tau2 + 1).
      *
      * This current iteration assumes that n_f1 = n_f2. This may be changed in
      * the future.
      *
      */
-    int i=0, j=0, nthreads;
+    int i=0, j=0, nthreads, l1, l2;
     printf("tau1 is %d, tau2 is %d\n", tau1, tau2);
     if (unbiased) {
             #pragma omp parallel
-        {
             nthreads = omp_get_num_threads();
             printf("Number of threads is %d\n",nthreads);
+            l1 = (tau1 >= n_f1) ? n_f1 - 1: tau1;
+            l2 = (tau2 >= n_f2) ? n_f2 - 1: tau2;
             #pragma omp for
-            for (i=(-tau1+1); i < tau1; i++) {
-                for (j=(-tau2 + 1); j < tau2; j++) {
-                xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_unbiased(f1, f2, n_f1, i, j);
+            for (i=0; i <= 2 * l1; i++) {
+                for (j=0; j<= 2 * l2; j++) {
+                    xcorr[i + j * (2 * l1 + 1)] = xcorr_unbiased(f1, f2, n_f1, i - l1, j - l2);
                 }
             }
-        }
     }else  {
-            #pragma omp parallel for
-            for(i=(-tau1+1);i<tau1;i++) {
-                for(j=(-tau2 +1);j<tau2;j++) {
-                    xcorr[i + tau1 - 1 + (j + tau2 - 1) * (2 * tau1 - 1)] = xcorr_sum(f1, f2, n_f1, i, j); 
+            #pragma omp parallel
+            l1 = (tau1 >= n_f1) ? n_f1 - 1: tau1;
+            l2 = (tau2 >= n_f2) ? n_f2 - 1: tau2;
+            #pragma omp for
+            for (i=0; i <= 2 * l1; i++) {
+                for (j=0; j<= 2 * l2; j++) {
+                    xcorr[i + j * (2 * l1 + 1)] = xcorr_sum(f1, f2, n_f1, i - l1, j - l2);
                 }
             }
     }
@@ -108,14 +111,13 @@ double xcorr_sum(double *f1, double *f2, int n, int tau1, int tau2) {
             nf = n - abs(tau1);
         }
     }
-    printf("ni = %d, nf = %d\n", ni, nf);
-    printf("\nFor tau1 = %d, tau2 = %d, we are summing over:\n", tau1, tau2);
+//    printf("ni = %d, nf = %d\n", ni, nf);
+//    printf("\nFor tau1 = %d, tau2 = %d, we are summing over:\n", tau1, tau2);
     for (i=ni; i < nf; i++) {
         sum += f1[i] * f1[i - tau1] * f2[i - tau2]; 
-        printf("f1(%d) * f1(%d) * f2(%d)\n", i, i - tau1, i - tau2);
     }
-    printf("Sum done. \n\n");
-    printf("sum = %f\n", sum);
+//    printf("Sum done. \n\n");
+//    printf("sum = %f\n", sum);
     return sum;
 }
 
