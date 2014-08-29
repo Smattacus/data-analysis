@@ -20,8 +20,8 @@ def getAvgCorr(d, delta_t):
     
     tau1 = c_int(delta_t)
     tau2 = c_int(delta_t)
-    arrlarge = c_double * ((2 * delta_t - 1)**2)
-    runavgarr = np.zeros(( 2 * delta_t - 1) **2)
+    arrlarge = c_double * ((2 * delta_t + 1) **2)
+    runavgarr = np.zeros((2 * delta_t + 1) ** 2)
     bigarr = arrlarge()
     avect = 0
     for x, y in zip(d['ave1'].transpose(), d['ave2'].transpose()):
@@ -43,5 +43,5 @@ def getAvgCorr(d, delta_t):
             mylib.corr3_parallel(f2, f1, np.size(d2), np.size(d1), tau1, tau2, 1, bigarr)
         runavgarr +=  runavgarr + np.array(bigarr)
     runavgarr /= np.size(d['ave1'])
-    runavgarr = runavgarr.reshape(2 * delta_t - 1, 2 * delta_t - 1).transpose()
+    runavgarr = runavgarr.reshape(2 * delta_t + 1, 2 * delta_t + 1).transpose()
     return runavgarr
