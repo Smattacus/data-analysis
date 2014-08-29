@@ -44,6 +44,11 @@ elif np.size(sys.argv) == 3:
     p = sys.argv[2]
     print("search read in is: " + search)
     print("Input path is: " + p)
+else:
+    print("There are " + str(np.size(sys.argv)) + " inputs.")
+    for x in sys.argv:
+        print(x)
+
 
 #If it is a filename, glob.glob(search) will just return that filename.
 #If there is only one element in the search list, search by that element name.
