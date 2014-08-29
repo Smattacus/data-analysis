@@ -59,8 +59,8 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
     printf("tau1 is %d, tau2 is %d\n", tau1, tau2);
     if (unbiased) {
             #pragma omp parallel
-            nthreads = omp_get_num_threads();
-            printf("Number of threads is %d\n",nthreads);
+//            nthreads = omp_get_num_threads();
+//            printf("Number of threads is %d\n",nthreads);
             l1 = (tau1 >= n_f1) ? n_f1 - 1: tau1;
             l2 = (tau2 >= n_f2) ? n_f2 - 1: tau2;
             #pragma omp for
