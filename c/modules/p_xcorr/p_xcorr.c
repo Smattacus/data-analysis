@@ -21,7 +21,7 @@
 #include "p_xcorr.h"
 
 void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int tau2, 
-                int unbiased, double *xcorr) {
+        int unbiased, double *xcorr) {
     /*
      *This program finds the three point correlation for [+/- tau1, +/- tau2].
      *
@@ -58,19 +58,23 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
     int i=0, j=0, nthreads, l1, l2;
     printf("tau1 is %d, tau2 is %d\n", tau1, tau2);
     if (unbiased) {
-            #pragma omp parallel
-//            nthreads = omp_get_num_threads();
-//            printf("Number of threads is %d\n",nthreads);
+        #pragma omp parallel
+        {
+            nthreads = omp_get_num_threads();
+            printf("Number of threads is %d\n",nthreads);
             l1 = (tau1 >= n_f1) ? n_f1 - 1: tau1;
             l2 = (tau2 >= n_f2) ? n_f2 - 1: tau2;
             #pragma omp for
             for (i=0; i <= 2 * l1; i++) {
+                printf("i = %d\n", i);
                 for (j=0; j<= 2 * l2; j++) {
                     xcorr[i + j * (2 * l1 + 1)] = xcorr_unbiased(f1, f2, n_f1, i - l1, j - l2);
                 }
             }
+        }
     }else  {
-            #pragma omp parallel
+        #pragma omp parallel
+        {
             l1 = (tau1 >= n_f1) ? n_f1 - 1: tau1;
             l2 = (tau2 >= n_f2) ? n_f2 - 1: tau2;
             #pragma omp for
@@ -79,6 +83,7 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
                     xcorr[i + j * (2 * l1 + 1)] = xcorr_sum(f1, f2, n_f1, i - l1, j - l2);
                 }
             }
+        }
     }
     return;
 }
@@ -86,11 +91,11 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
 double xcorr_sum(double *f1, double *f2, int n, int tau1, int tau2) {
     //Returns the single element three point correlation at the point given by
     //tau1, tau2.
-    
+
     int i, nf, ni;
     double sum = 0;
 
-//    for (i=0; i < n; i++) printf("f1 = %f, f2 = %f\n", f1[i], f2[i]);
+    //    for (i=0; i < n; i++) printf("f1 = %f, f2 = %f\n", f1[i], f2[i]);
     //if tau1 > tau2, make ni = tau1, else ni = tau2
     if (tau1 > 0 && tau2 > 0) {
         ni = (tau1 > tau2) ? tau1 : tau2;
@@ -102,7 +107,7 @@ double xcorr_sum(double *f1, double *f2, int n, int tau1, int tau2) {
     }
     //One positive, one negative, set ni = positive tau
     else {
-    //set ni = positive tau, nf = n - abs(negative tau)
+        //set ni = positive tau, nf = n - abs(negative tau)
         if (tau1 > tau2) {
             ni = tau1;
             nf = n - abs(tau2);
@@ -111,20 +116,19 @@ double xcorr_sum(double *f1, double *f2, int n, int tau1, int tau2) {
             nf = n - abs(tau1);
         }
     }
-//    printf("ni = %d, nf = %d\n", ni, nf);
-//    printf("\nFor tau1 = %d, tau2 = %d, we are summing over:\n", tau1, tau2);
+    //    printf("ni = %d, nf = %d\n", ni, nf);
+    //    printf("\nFor tau1 = %d, tau2 = %d, we are summing over:\n", tau1, tau2);
     for (i=ni; i < nf; i++) {
         sum += f1[i] * f1[i - tau1] * f2[i - tau2]; 
     }
-//    printf("Sum done. \n\n");
-//    printf("sum = %f\n", sum);
+    //    printf("Sum done. \n\n");
+    //    printf("sum = %f\n", sum);
     return sum;
 }
 
 double xcorr_unbiased(double *f1, double *f2, int n, int tau1, int tau2) {
     //Returns the single element three point correlation at the point given by
     //tau1, tau2.
-    
     int i, nf, ni;
     double sum = 0;
 
@@ -139,7 +143,7 @@ double xcorr_unbiased(double *f1, double *f2, int n, int tau1, int tau2) {
     }
     //One positive, one negative, set ni = positive tau
     else {
-    //set ni = positive tau, nf = n - abs(negative tau)
+        //set ni = positive tau, nf = n - abs(negative tau)
         if (tau1 > tau2) {
             ni = tau1;
             nf = n - abs(tau2);
