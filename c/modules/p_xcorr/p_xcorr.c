@@ -64,9 +64,8 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
             printf("Number of threads is %d\n",nthreads);
             l1 = (tau1 >= n_f1) ? n_f1 - 1: tau1;
             l2 = (tau2 >= n_f2) ? n_f2 - 1: tau2;
-            #pragma omp for
+            #pragma omp for private(i, j)
             for (i=0; i <= 2 * l1; i++) {
-                printf("i = %d\n", i);
                 for (j=0; j<= 2 * l2; j++) {
                     xcorr[i + j * (2 * l1 + 1)] = xcorr_unbiased(f1, f2, n_f1, i - l1, j - l2);
                 }
@@ -77,7 +76,7 @@ void corr3_parallel(double *f1, double *f2, int n_f1, int n_f2, int tau1, int ta
         {
             l1 = (tau1 >= n_f1) ? n_f1 - 1: tau1;
             l2 = (tau2 >= n_f2) ? n_f2 - 1: tau2;
-            #pragma omp for
+            #pragma omp for private(i, j)
             for (i=0; i <= 2 * l1; i++) {
                 for (j=0; j<= 2 * l2; j++) {
                     xcorr[i + j * (2 * l1 + 1)] = xcorr_sum(f1, f2, n_f1, i - l1, j - l2);
