@@ -39,7 +39,7 @@ def getAvgCorr(d, delta_t):
             mylib.corr3_parallel(f1, f2, np.size(d1), np.size(d2), tau1, tau2, 1, bigarr)
         else:
             mylib.corr3_parallel(f2, f1, np.size(d2), np.size(d1), tau1, tau2, 1, bigarr)
-        runavgarr =  runavgarr + np.array(bigarr)
+        runavgarr =  runavgarr + np.array(bigarr, dtype='float64')
     runavgarr /= np.size(d['ave1'])
     runavgarr = runavgarr.reshape(2 * delta_t + 1, 2 * delta_t + 1).transpose()
     return runavgarr
