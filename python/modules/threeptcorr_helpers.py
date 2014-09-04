@@ -16,8 +16,6 @@ def getAvgCorr(d, delta_t):
     #OUTPUTS    - 
     #   runavgarr - Pointwise averaged three point correlation function.
     #
-    #
-    
     tau1 = c_int(delta_t)
     tau2 = c_int(delta_t)
     arrlarge = c_double * ((2 * delta_t + 1) **2)
