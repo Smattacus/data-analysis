@@ -1,5 +1,6 @@
 import numpy as np
 import spec
+import Gnuplot
 
 def Get_TPC_Spec(tpc, dt, applywindow = True, window = 'gaussian',
         window_var=0.01, returnwin=False):
@@ -41,7 +42,7 @@ def Get_TPC_Spec(tpc, dt, applywindow = True, window = 'gaussian',
         t2 = np.linspace(-(N2 - 1)/2, (N2 - 1)/2, N2) * dt
         if window == 'gaussian':
             [Xg, Yg] = np.meshgrid(t1, t2)
-            corr2win = np.exp(-(Xg / tc)**2 - (Yg / tc)**2 - (Xg * Yg) / (tc)**2)
+            corr2win = np.exp(-(Xg / tc)**2 - (Yg / tc)**2 + (Xg * Yg) / (tc)**2)
         tpcwin = tpc * corr2win
         [f1, f2, g] = spec.spec2d(tpcwin, dt)
     if returnwin:
@@ -49,14 +50,26 @@ def Get_TPC_Spec(tpc, dt, applywindow = True, window = 'gaussian',
     else:
         return f1, f2, g
 
-def surface_tpc(mat, x, y, gridsize = (20, 20), imagename=''):
+def surface_tpc(mat, x, y, xlabel, ylabel, title, outname=''): 
     """
         Quick helper routine to plot up a section of the bispectrum using
         Gnuplot. Will write to a file if imagename is given a value.
         mat
             - 2d np array. Array to be plotted.
         x
-            -
-"""
-    return
+            - 1d np array. x axis.
+        y
+            - 1d np array. y axis.
+    """
+    g = Gnuplot.Gnuplot(debug=1)
+    g('set parametric')
+    g('set pm3d map')
+    g.xlabel(xlabel)
+    g.ylabel(ylabel)
+    g.title(title)
+    if outname != '':
+        g('set term postscript eps enhanced color')
+        g('set output "' + outname + '"')
+    g.splot(Gnuplot.GridData(mat, x, y, binary=1, filename='temp.bin')) 
+    
 
