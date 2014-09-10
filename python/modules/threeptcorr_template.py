@@ -70,7 +70,7 @@ print(os.getcwd())
 delta_t = 1000
 for x in fl:
     data = io.loadmat(x)
-    threepoint = tpc.getAvgCorr(data, delta_t)
+    (threepoint, tpc_std) = tpc.getAvgCorr(data, delta_t)
     out = string.replace(x, '.mat', '_3corr.mat')
     print("Will save to " + out)
-    io.savemat(out, {'tpcorr': threepoint})
+    io.savemat(out, {'tpcorr': threepoint, 'tpc_stds':tpc_std})
