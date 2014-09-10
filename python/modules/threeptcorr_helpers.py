@@ -15,9 +15,14 @@ def getAvgCorr(d, delta_t):
     #
     #OUTPUTS    - 
     #   runavgarr - Pointwise averaged three point correlation function.
+    #   runstds : array like.
+    #       Pointwise standard deviation of the stack of averaged three poitn
+    #       correlation.
     #
     tau1 = c_int(delta_t)
     tau2 = c_int(delta_t)
+    holder = np.zeros((2 * delta_t + 1, 2 * delta_t + 1, np.size(d['ave1'])))
+    ct = 0
     arrlarge = c_double * ((2 * delta_t + 1) **2)
     runavgarr = np.zeros((2 * delta_t + 1) ** 2)
     bigarr = arrlarge()
@@ -39,7 +44,9 @@ def getAvgCorr(d, delta_t):
             mylib.corr3_parallel(f1, f2, np.size(d1), np.size(d2), tau1, tau2, 1, bigarr)
         else:
             mylib.corr3_parallel(f2, f1, np.size(d2), np.size(d1), tau1, tau2, 1, bigarr)
-        runavgarr =  runavgarr + np.array(bigarr, dtype='float64')
-    runavgarr /= np.size(d['ave1'])
-    runavgarr = runavgarr.reshape(2 * delta_t + 1, 2 * delta_t + 1).transpose()
-    return runavgarr
+        holder[:,:,ct] = np.array(bigarr, dtype='float64').reshape(2 * delta_t
+                + 1, 2 * delta_t + 1).transpose()
+        ct += 1
+    runavgarr = np.mean(holder, axis=2, dtype='float64') 
+    runstds = np.std(holder, axis=2)
+    return (runavgarr, runstds)
