@@ -17,6 +17,7 @@ function [TOP1, BOT1, TOP2, BOT2] = genAllTPBoxFindPhase_OnePMT(path, Fc, Fa, PM
 %   Fc - Frequency of the square wave function. Generally, this is the
 %            laser chop frequency
 %   Fa   - Acquisition frequency.
+%   PMT  - Which PMT to use. (1 or 2).
 %
 %OUTPUTS:
 %   TOP1 - NxM array of LIF +plasma data. N = number of files, M = # of points, PMT 1.
@@ -59,7 +60,8 @@ for i=1:size(list,1)
     if PMT==1
         s1 = sum(data(1:8, :)); s1 = s1 - mean(s1);
         s2 = sum(data(9:16,:)); s2 = s2 - mean(s2);
-    else if PMT==2
+    end
+    if PMT==2
         s1 = sum(data(17:24)); s1 = s1 - mean(s1);
         s2 = sum(data(25:32)); s2 = s2 - mean(s2);
     end
