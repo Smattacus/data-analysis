@@ -31,6 +31,26 @@ OUTPUTS:
     f = (linspace(1, n, n) - (n + (1 + (n % 2 ==0 )))/2) * f0
     P = fp.fftshift(P)
     return f, P
+
+def ispec(x, df):
+    """
+    Takes the inverse of a spectrum as calculated by spec().
+
+    Usage:
+    [t, g] = spec(x, dt)
+INPUTS:
+    x   - array of data to inverse transform
+    df  - Frequency elements between array elements. (Scalar). Used to
+    generate the frequency array.
+OUTPUTS:
+    t   - Time array.
+    g   - Real - time function.
+"""
+    n = size(x)
+    T = 1/abs(df)
+    g = sp.fftpack.ifft(fp.ifftshift(x)) * sqrt(n)
+    t = (linspace(0, n-1, n)) * T / n
+    return t, g
     
     
 #2D arrays.
