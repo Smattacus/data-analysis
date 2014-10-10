@@ -50,6 +50,13 @@ def Get_TPC_Spec(tpc, dt, applywindow = True, window = 'gaussian',
     else:
         return f1, f2, g
 
+def GetAllTPCSpecs(tpc, dt, applywindow=True, window='gaussian',
+        window_var=0.01, returnwin=False):
+    """
+    Calculates and returns the bispectrum, asymmetric bispectrum, and symmetric
+    bispectrum.
+    """
+
 def surface_tpc(mat, x, y, xlabel, ylabel, title, outname=''): 
     """
         Quick helper routine to plot up a section of the bispectrum using
