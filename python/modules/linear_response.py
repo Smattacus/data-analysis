@@ -4,7 +4,6 @@ from scipy import signal
 from scipy import fftpack as fp
 import spec
 import Gnuplot
-import plotters
 from scipy import signal
 
 
@@ -41,10 +40,10 @@ def response(xcm, a1, a2, tc, tw, dt):
     Hyx: array_like
         Linear response of Y to X.
     """
-    CR = np.append(xcm[N-1][::-1], xcm[N:])
-    CL = np.append(xcm[0:N-1], xcm[0:N][::-1])
     N = (np.size(xcm) + 1) / 2
-    t = linspace(-(N-1),(N-1), 2 * N - 1) / 1e5
+    CR = np.append(xcm[N-1:][::-1], xcm[N:])
+    CL = np.append(xcm[0:N-1], xcm[0:N][::-1])
+    t = np.linspace(-(N-1),(N-1), 2 * N - 1) / 1e5
     win = np.exp(-(t/tc)**2/2)
     #Window functions
     CRw = CR * win
@@ -73,10 +72,10 @@ def response(xcm, a1, a2, tc, tw, dt):
     #real() is just another way of getting abs(), only by making sure the
     #fft vector is on the real line. w/e
     gHxy = np.real(gCRw) / np.real(ga2w)
-    gHyx = np.eral(gCLw) / np.real(ga1w)
+    gHyx = np.real(gCLw) / np.real(ga1w)
     gHxyHT = signal.hilbert(gHxy)
     gHyxHT = signal.hilbert(gHyx)
-    Hxy = spec.ispec(gHxyHT, f[1] - f[0])
-    Hyx = spec.ispec(gHyxHT, f[1] - f[0])
-    return (Hxy, Hyx)
+    [t, Hxy] = spec.ispec(gHxyHT, f[1] - f[0])
+    [t, Hyx] = spec.ispec(gHyxHT, f[1] - f[0])
+    return (Hxy[::-1], Hyx[::-1], t)
 
