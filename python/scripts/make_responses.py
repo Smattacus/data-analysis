@@ -39,6 +39,9 @@ g2 = Gnuplot.Gnuplot(debug=1)
 g1('set terminal png')
 g2('set terminal png')
 
+g1('set style data lines')
+g2('set style data lines')
+
 xymax = 0
 yxmax = 0
 xymin = 0
