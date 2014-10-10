@@ -67,4 +67,3 @@ for i=1:size(list,1)
     TOP2(i,:) = T2;
     BOT2(i,:) = B2;
 end
-    
