@@ -18,7 +18,7 @@ l.sort()
 
 #Load the arrays out of the files, grab xcsmean_lifscaled, ac_ch1_mn, and ac_ch2_mn, and get the linear 
 #response functions. This one's a bit of a handful.
-r_t = [linear_response.response(xx, yy, zz, 0.01, 0.04, 1e-6) for xx, yy, zz in
+r_t = [linear_response.response(xx, yy, zz, 0.01, 0.04, 1e-5) for xx, yy, zz in
         [(x['xcsmean_lifscaled'][0,:], x['ac_ch1_mn'][0,:],
             x['ac_ch2_mn'][0,:]) for x in [io.loadmat(y) for y in l]]]
 
