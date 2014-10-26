@@ -11,7 +11,7 @@ def response(xcm, a1, a2, tc, tw, dt):
     """Calculates and returns the linear response function corresponding to Cr
     and Cl, the folded cross correlation functions.
 
-    (Hxy, Hyx) = response(xcm, a1, a2, tc, tw, dt)
+    (Hxy, Hyx, t) = response(xcm, a1, a2, tc, tw, dt)
 
     This method assumes that xcm was created with the matlab command xcorr as
     follows:
@@ -39,6 +39,8 @@ def response(xcm, a1, a2, tc, tw, dt):
         Linear response of X to Y.
     Hyx: array_like
         Linear response of Y to X.
+    t : array_like
+        Time axis of the linear response functions.
     """
     N = (np.size(xcm) + 1) / 2
     CR = np.append(xcm[N-1:][::-1], xcm[N:])
