@@ -7,8 +7,11 @@ import os
 import numpy as np
 import scipy as sp
 from scipy import signal as sig
+from scipy import fftpack as fp
 import glob
 import h5py
+import spec
+
 
 def genAllTPBoxFindPhase(path, Fc, Fa):
     '''
@@ -110,7 +113,7 @@ INPUTS:
     pahse2 = p(im2)
     return (phase1, phase2)
 
-def GetTopBox(sums, squares, dt, nyq)
+def GetTopBot(sums, squares, dt, nyq)
 '''
 %[TOP, BOT] = getTopBot(sums, squares, dt, nyq)
 Function which takes the signal, aligned square wave, and time
@@ -129,3 +132,13 @@ BOT        = Poitns corresponding to the downsampled lase OFF
 '''
     su = sums * (squares + 1) / 2
     sb = sums * (-squares + 1) / 2
+    [f, gu] = spec.spec(su, dt)
+    f[, gb] = spec.spec(sb, dt)
+    cut = np.where(abs(f) > nyq)
+    gu(cut) = 0
+    gb(cut) = 0
+    [t, su_c] = ispec(gu, f)
+    [t, sb_c] = ispec(gb, f)
+    #Do I need to put in a shift? Take a look at some data.
+    TOP = sig.resample(su_c, len(su_c) * nyq * 2 * dt)
+    BOT = sig.resample(sb_c, len(sb_c) * nyq * 2 * dt)
