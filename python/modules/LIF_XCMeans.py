@@ -7,8 +7,11 @@ import os
 import numpy as np
 import scipy as sp
 from scipy import signal as sig
+from scipy import fftpack as fp
 import glob
 import h5py
+import spec
+
 
 def genAllTPBoxFindPhase(path, Fc, Fa):
     '''
@@ -49,17 +52,14 @@ OUTPUTS:
     N = np.size(d, 0)
     total_t = N / Fa
     base_phase = np.linspace(0 , 2 * np.pi * total_t * Fc, N)
-
-    TOP1 = np.zeros(nfiles, N * Fc / Fa)
-    BOT1 = np.zeros(nfiles, N * Fc / Fa)
-    TOP2 = np.zeros(nfiles, N * Fc / Fa)
-    BOT2 = np.zeros(nfiles, N * Fc / Fa)
-
+    TOP1 = np.zeros((nfiles, N * Fc / Fa))
+    BOT1 = np.zeros((nfiles, N * Fc / Fa))
+    TOP2 = np.zeros((nfiles, N * Fc / Fa))
+    BOT2 = np.zeros((nfiles, N * Fc / Fa))
     i=0
-
     for x in l:
         (p1, p2) = findMaxPhase(x, total_t, Fa, Fc, False)
-        if np.size(p1) > 1 || np.size(p2) > 1:
+        if np.size(p1) > 1 or np.size(p2) > 1:
             print('Phase potentially zero for file = %s' % x)
         sq1 = sig.square(p1 + base_phase)
         sq2 = sig.square(p2 + base_phase)
@@ -77,8 +77,8 @@ OUTPUTS:
     return (TOP1, BOT1, TOP2, BOT2)
 
 
-def findMaxPhase(filename, Ta, Fs, Fc, plots)
-'''
+def findMaxPhase(filename, Ta, Fs, Fc, plots):
+    '''
     FUnction which calculates and plots the maximum phase for the square wave.
 This assumes that you are using the synchronization box, and generates a
 square wave programmatically rather than using inverse transforms.
@@ -94,24 +94,24 @@ INPUTS:
    Fs          - Sampling frequency
    Fc          - Chop frequency
    plots       - Boolean to display plots
-'''
+    '''
     d = np.array(h5py.File(filename, 'r')['PMT_DATA_8BIT'])
-    s1 = sum(d[:,5:10])
-    s2 = sum(d[:,22:26])
+    s1 = np.sum(d[:,6:9], 1)
+    s2 = np.sum(d[:,22:25], 1)
     phases = np.linspace(0, 2 * np.pi * Fc * Ta, Ta * Fs)
     p = np.linspace(0, 2 * np.pi, 100)
-    PMT1 = zeros(100,1)
-    PMT2 = zeros(100,1)
-    PMT1 = [np.sum(sig.square(phases + x + 1) * s1) / 2 for x in p]
-    PMT2 = [np.sum(sig.square(phases + x + 1) * s2) / 2 for x in p]
+#    PMT1 = np.zeros((100,1))
+#    PMT2 = np.zeros((100,1))
+    PMT1 = [np.sum((sig.square(phases + x) + 1) * s1) / 2 for x in p]
+    PMT2 = [np.sum((sig.square(phases + x) + 1) * s2) / 2 for x in p]
     im1 = np.where(PMT1 == np.max(PMT1))
-    phase1 = p(im1)
-    im 2= np.where(PMT2 == np.max(PMT2))
-    pahse2 = p(im2)
+    phase1 = p[im1]
+    im2 = np.where(PMT2 == np.max(PMT2))
+    phase2 = p[im2]
     return (phase1, phase2)
 
-def GetTopBot(sums, squares, dt, nyq)
-'''
+def GetTopBot(sums, squares, dt, nyq):
+    '''
 %[TOP, BOT] = getTopBot(sums, squares, dt, nyq)
 Function which takes the signal, aligned square wave, and time
 differential and generates the top and bottom arrays.
@@ -129,3 +129,13 @@ BOT        = Poitns corresponding to the downsampled lase OFF
 '''
     su = sums * (squares + 1) / 2
     sb = sums * (-squares + 1) / 2
+    [f, gu] = spec.spec(su, dt)
+    [f, gb] = spec.spec(sb, dt)
+    cut = np.where(abs(f) > nyq)
+    gu[cut] = 0
+    gb[cut] = 0
+    [t, su_c] = ispec(gu, f)
+    [t, sb_c] = ispec(gb, f)
+    #Do I need to put in a shift? Take a look at some data.
+    TOP = sig.resample(su_c, len(su_c) * nyq * 2 * dt)
+    BOT = sig.resample(sb_c, len(sb_c) * nyq * 2 * dt)
