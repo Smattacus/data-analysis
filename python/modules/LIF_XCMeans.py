@@ -110,7 +110,7 @@ INPUTS:
     pahse2 = p(im2)
     return (phase1, phase2)
 
-def GetTopBox(sums, squares, dt, nyq)
+def GetTopBot(sums, squares, dt, nyq)
 '''
 %[TOP, BOT] = getTopBot(sums, squares, dt, nyq)
 Function which takes the signal, aligned square wave, and time
