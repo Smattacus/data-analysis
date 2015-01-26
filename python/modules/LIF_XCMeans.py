@@ -77,7 +77,7 @@ OUTPUTS:
     return (TOP1, BOT1, TOP2, BOT2)
 
 
-def findMaxPhase(filename, Ta, Fs, Fc, plots):
+def findMaxPhase(filename, Ta, Fs, Fc, plots, duty=0.5):
     '''
     FUnction which calculates and plots the maximum phase for the square wave.
 This assumes that you are using the synchronization box, and generates a
@@ -102,8 +102,8 @@ INPUTS:
     p = np.linspace(0, 2 * np.pi, 100)
 #    PMT1 = np.zeros((100,1))
 #    PMT2 = np.zeros((100,1))
-    PMT1 = [np.sum((sig.square(phases + x) + 1) * s1) / 2 for x in p]
-    PMT2 = [np.sum((sig.square(phases + x) + 1) * s2) / 2 for x in p]
+    PMT1 = [np.sum((sig.square(phases + x, duty) + 1) * s1) / 2 for x in p]
+    PMT2 = [np.sum((sig.square(phases + x, duty) + 1) * s2) / 2 for x in p]
     im1 = np.where(PMT1 == np.max(PMT1))
     phase1 = p[im1]
     im2 = np.where(PMT2 == np.max(PMT2))
