@@ -87,7 +87,6 @@ It will display plots of the phase for the user to verify that the phase
 is correct and the same for both lasers.
 
 [phase1, phase2] = findMaxPhase(filename, Ta, Fs, Fc, plots)
-
 INPUTS:
    filename
    Ta          - Acq time in seconds
@@ -125,17 +124,49 @@ dt         = time difference between readings. 1 / f
 nyq        = Desired nyquist frequency (usually 1/2 of chop)
 OUTPUTS:
 TOP        = Points corresponding to the downsampled laser ON
-BOT        = Poitns corresponding to the downsampled lase OFF
+BOT        = Poitns corresponding to the downsampled laser OFF
 '''
-    su = sums * (squares + 1) / 2
-    sb = sums * (-squares + 1) / 2
-    [f, gu] = spec.spec(su, dt)
-    [f, gb] = spec.spec(sb, dt)
+#Old
+#    su = sums * (squares + 1) / 2
+#    sb = sums * (-squares + 1) / 2
+#    [f, gu] = spec.spec(su, dt)
+#    [f, gb] = spec.spec(sb, dt)
+#    cut = np.where(abs(f) > nyq)
+#    gu[cut] = 0
+#    gb[cut] = 0
+#    [t, su_c] = ispec(gu, f)
+#    [t, sb_c] = ispec(gb, f)
+#    #Do I need to put in a shift? Take a look at some data.
+#    TOP = sig.resample(su_c, len(su_c) * nyq * 2 * dt)
+#    BOT = sig.resample(sb_c, len(sb_c) * nyq * 2 * dt)
+#New
+    #Downsample the array
+    [f, g] = spec.spec(sums)
     cut = np.where(abs(f) > nyq)
-    gu[cut] = 0
-    gb[cut] = 0
-    [t, su_c] = ispec(gu, f)
-    [t, sb_c] = ispec(gb, f)
-    #Do I need to put in a shift? Take a look at some data.
-    TOP = sig.resample(su_c, len(su_c) * nyq * 2 * dt)
-    BOT = sig.resample(sb_c, len(sb_c) * nyq * 2 * dt)
+    g[cut] = 0
+    [t, sums_ds] = spec.ispec(g, f)
+    #Determine the duty cycle of the square wave.
+    # (# of differences per sq. wave cycle) * (scaling factor 
+    # for all cycles in
+    # square array) * normalization + (default duty cycle)
+    d = (np.sum(squares) * (10 / len(squares)) / 20.0) + 0.5
+    d = round(d, 1)
+    #Determine phase, in multiple of 2pi/10
+    phs = round(10 * d - np.where(squares[0:10] == -1)[0][0])
+    #Apply the square wave to the data.
+    su = sums_ds * (squares + 1) / 2
+    sd = sums_ds * (squares + 1) / 2
+    if d == 0.5:
+        TOP = sig.resample(su, len(su) * nyq * 2 * dt)
+        BOT = sig.resample(sd, len(sd) * nyq * 2 * dt)
+    else:
+        on = d * 10
+        off = (1 - d) * 10
+        #Get rid of zerod elements
+        su = su[(su != 0)]
+        sd = sd[(sd != 0)]
+        su = su.reshape(on, len(su) / on)
+        sd = sd.reshape(off, len(sd)/off)
+        #Weighted average along each axis.
+
+
