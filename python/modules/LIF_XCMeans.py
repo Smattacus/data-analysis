@@ -266,16 +266,16 @@ def plotHists(flist, Ta, Fs, Fc, target = ''):
         Fc      :   Chopping speed of the laser in the file.
         target  :   Target directory. Defaults to current directory.
     '''
-    figure(1)
-    clf()
+    pyplot.figure(1)
+    pyplot.clf()
     for x in flist:
         (s1rs, s2rs) = sumToTen(f, ta, Fs, Fc)
-        clf()
+        pyplot.clf()
         fo = f.replace('.h5', '.png')
-        plot(PMT1)
-        plot(PMT2)
-        legend(['PMT1', 'PMT2'])
-        title('Plot for ' + fo)
-        savefig(fo)
+        pyplot.plot(PMT1)
+        pyplot.plot(PMT2)
+        pyplot.legend(['PMT1', 'PMT2'])
+        pyplot.title('Plot for ' + fo)
+        pyplot.savefig(fo)
 
 
