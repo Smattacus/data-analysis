@@ -80,6 +80,36 @@ OUTPUTS:
         BOT2[i,:] = B2
     return (TOP1, BOT1, TOP2, BOT2)
 
+def genTPBoxFindPhase(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0, ch1os =
+        1, ch2os = 1):
+    '''Generates the TOP and BOT of a single file. Combines previously written
+    programs.
+
+    INPUTS:
+        fn      :   Filename of the relevant data.
+        Ta      :   Total seconds of acquisition.
+        Fs      :   Sampling speed of the PMT counting circuitry.
+        Fc      :   Chop speed of the laser.
+        plots   :   Whether to make plots of the phases. Defaults to false.
+        duty=0.6:   Duty cycle of the square wave for alignment. Defaults to
+                    0.6.
+        chan=0  :   Which channel to get results for. Defaults to both channels
+                    (chan = 0). chan = 1 corresponds to PMT1, while chan = 2
+                    corresponds to PMT2.
+        ch1os   :   Displacement of channel 1 from the sumToTen() max. Check
+                    figure for verification of correct value.
+        ch2os   :   Displacement of channel 1 from the sumToTen() max. Check
+                    figure for verification of correct value.
+                NB: ch1os and ch2os default to 1, which means there is 1 sample of
+                rising LIF signal before the max is hit.
+    '''
+    (p1, p2) = findMaxPhaseViaSum(fn, Ta, Fs, Fc, plots, chan=chan, ch1os =
+            dch1, ch2os = dch2) 
+    d = np.array(h5py.File(fn, 'r')['PMT_DATA_8BIT'])
+    if chan == 0:
+        s1 = np.sum(d[:,0:16],1)
+        s2 = np.sum(d[:,16:],1)
+        (T1, B1) = getTopBot
 
 def findMaxPhase(filename, Ta, Fs, Fc, plots, duty=0.5):
     '''
@@ -136,6 +166,12 @@ plotname='temp.png', chan=0, ch1os=1, ch2os=1):
         plotname='temp.png'     : Filename for the verification plots.
         chan=0      : Channels to generate plots for. 0 : Both. 1: PMT1. 2:
                         PMT2.
+        ch1os=1     :   Offset of channel 1 relative to the max of PMT1.
+                        Defaults to 1, which means there is 1 sample of rising
+                        LIF before the max.
+        ch2os=1     :   Offset of channel 2 relative to the max of PMT2.
+                        Defaults to 1, which means is 1 sample of rising LIF
+                        before the max.
     OUTPUTS:
         (p1,p2)          :   Phases for (PMT1, PMT2)
     '''
@@ -162,8 +198,8 @@ plotname='temp.png', chan=0, ch1os=1, ch2os=1):
     s1m = np.where(s1rss == np.max(s1rss))[0][0]
     s2m = np.where(s2rss == np.max(s2rss))[0][0]
     #Assume a one element offset
-    p1 = 2 * np.pi - (s1m-1) * 2 * np.pi / 10
-    p2 = 2 * np.pi - (s2m-1) * 2 * np.pi / 10
+    p1 = 2 * np.pi - (s1m-ch1os) * 2 * np.pi / 10
+    p2 = 2 * np.pi - (s2m-ch2os) * 2 * np.pi / 10
     return (p1, p2)
 
 def getTopBot(sums, squares, dt, nyq, phase, duty, osample=10):
@@ -251,7 +287,7 @@ def sumToTen(filename, Ta, Fs, Fc):
     s2rs = np.sum(s2.reshape(Ta * Fc, Fs / Fc), 0)
     return (s1rs, s2rs)
 
-def plotHists(flist, Ta, Fs, Fc, target = ''):
+def plotHists(flist, Ta, Fs, Fc, target = '', chan=0):
     '''
         Generates histograms of the data files of all files in a given list.
         Writes PNG files to the target directory.
@@ -265,15 +301,22 @@ def plotHists(flist, Ta, Fs, Fc, target = ''):
         Fs      :   Sampling speed of each file.
         Fc      :   Chopping speed of the laser in the file.
         target  :   Target directory. Defaults to current directory.
+        chan=0  :   Which channels to plot. Defaults to both.
+                Options:
+                chan = 0    : Plot both channels
+                chan = 1    : Plot only PMT 1
+                chan = 2    : Plot only PMT 2
     '''
     pyplot.figure(1)
     pyplot.clf()
     for x in flist:
         (s1rs, s2rs) = sumToTen(x, Ta, Fs, Fc)
         pyplot.clf()
-        fo = target +  x.replace('.h5', '.png')
-        pyplot.plot(s1rs)
-        pyplot.plot(s2rs)
+        fo = target +  x.split('/')[-1].replace('.h5', '.png')
+        if chan == 0 or chan == 1:
+            pyplot.plot(s1rs)
+        if chan == 0 or chan == 2:
+            pyplot.plot(s2rs)
         pyplot.legend(['PMT1', 'PMT2'])
         pyplot.title('Plot for ' + fo)
         pyplot.savefig(fo)
