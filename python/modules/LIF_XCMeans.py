@@ -268,7 +268,7 @@ def plotDirectorySums(flist, Ta, Fs, Fc, target = ''):
     '''
     figure(1)
     clf()
-        for x in flist:
+    for x in flist:
         (s1rs, s2rs) = sumToTen(f, ta, Fs, Fc)
         clf()
         fo = f.replace('.h5', '.png')
