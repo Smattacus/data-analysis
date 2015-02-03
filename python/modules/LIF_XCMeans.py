@@ -251,9 +251,9 @@ def sumToTen(filename, Ta, Fs, Fc):
     s2rs = np.sum(s2.reshape(Ta * Fc, Fs / Fc), 0)
     return (s1rs, s2rs)
 
-def plotDirectorySums(flist, Ta, Fs, Fc, target = ''):
+def plotHists(flist, Ta, Fs, Fc, target = ''):
     '''
-        Generates histograms of the data files of all files in a directory.
+        Generates histograms of the data files of all files in a given list.
         Writes PNG files to the target directory.
 
         The filename defaults to the input filename with extension changed to
