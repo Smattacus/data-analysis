@@ -113,7 +113,7 @@ INPUTS:
     return (phase1, phase2)
 
 def findMaxPhaseViaSum(filename, Ta, Fs, Fc, plots=False,
-plotname='temp.png', chan=0):
+plotname='temp.png', chan=0, ch1os=1, ch2os=1):
     '''
     Makes a histogram of the file using sumToTen(). A major caveat in this
     routine is that it ASSUMES that the data takes one sample to rise to the
@@ -250,3 +250,32 @@ def sumToTen(filename, Ta, Fs, Fc):
     s1rs = np.sum(s1.reshape(Ta * Fc, Fs / Fc), 0)
     s2rs = np.sum(s2.reshape(Ta * Fc, Fs / Fc), 0)
     return (s1rs, s2rs)
+
+def plotDirectorySums(flist, Ta, Fs, Fc, target = ''):
+    '''
+        Generates histograms of the data files of all files in a directory.
+        Writes PNG files to the target directory.
+
+        The filename defaults to the input filename with extension changed to
+        .png
+
+        INPUTS:
+        flist    :   List of files to output.
+        Ta      :   Total acquisition time of each file.
+        Fs      :   Sampling speed of each file.
+        Fc      :   Chopping speed of the laser in the file.
+        target  :   Target directory. Defaults to current directory.
+    '''
+    figure(1)
+    clf()
+        for x in flist:
+        (s1rs, s2rs) = sumToTen(f, ta, Fs, Fc)
+        clf()
+        fo = f.replace('.h5', '.png')
+        plot(PMT1)
+        plot(PMT2)
+        legend(['PMT1', 'PMT2'])
+        title('Plot for ' + fo)
+        savefig(fo)
+
+
