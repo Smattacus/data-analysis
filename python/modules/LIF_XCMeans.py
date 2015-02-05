@@ -82,8 +82,8 @@ OUTPUTS:
 
 def genTPBoxFindPhase(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0, ch1os =
         1, ch2os = 1):
-    '''Generates the TOP and BOT of a single file. Combines previously written
-    programs.
+    '''Generates the TOPs and BOTs of a single file for a given channel or both
+    channels.
 
     INPUTS:
         fn      :   Filename of the relevant data.
@@ -104,12 +104,25 @@ def genTPBoxFindPhase(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0, ch1os =
                 rising LIF signal before the max is hit.
     '''
     (p1, p2) = findMaxPhaseViaSum(fn, Ta, Fs, Fc, plots, chan=chan, ch1os =
-            dch1, ch2os = dch2) 
+            ch1os, ch2os = ch2os) 
     d = np.array(h5py.File(fn, 'r')['PMT_DATA_8BIT'])
+    phasegen = np.linspace(0, 2 * np.pi * Fc * Ta, Ta * Fs, endpoint = False)
+    sq1 = sig.square(phasegen + p1, duty)
+    sq2 = sig.square(phasegen + p2, duty)
+    s1 = np.sum(d[:,0:16],1)
+    s2 = np.sum(d[:,16:],1)
     if chan == 0:
-        s1 = np.sum(d[:,0:16],1)
-        s2 = np.sum(d[:,16:],1)
-        (T1, B1) = getTopBot
+        (T1, B1) = getTopBot(s1, sq1, 1 / Fs, Fc / 2, p1, duty)
+        (T2, B2) = geetTopBot(s2, sq2, 1/Fs, Fc / 2, p2, duty)
+        return ([T1, B1], [T2, B2])
+    if chan == 1:
+        (T1, B1) = getTopBot(s1, sq1, 1/ Fs, Fc/2, p1, duty)
+        return (T1, B1)
+    if chan == 2:
+        (T2, B2) = getTopBot(s2, sq2, 1/Fs, Fc/2, p2, duty)
+        return (T2, B2)
+    return 
+
 
 def findMaxPhase(filename, Ta, Fs, Fc, plots, duty=0.5):
     '''
@@ -198,8 +211,8 @@ plotname='temp.png', chan=0, ch1os=1, ch2os=1):
     s1m = np.where(s1rss == np.max(s1rss))[0][0]
     s2m = np.where(s2rss == np.max(s2rss))[0][0]
     #Assume a one element offset
-    p1 = 2 * np.pi - (s1m-ch1os) * 2 * np.pi / 10
-    p2 = 2 * np.pi - (s2m-ch2os) * 2 * np.pi / 10
+    p1 = 2 * np.pi - (s1m-ch1os) * 2 * np.pi / (Fs / Fc)
+    p2 = 2 * np.pi - (s2m-ch2os) * 2 * np.pi / (Fs / Fc)
     return (p1, p2)
 
 def getTopBot(sums, squares, dt, nyq, phase, duty, osample=10):
@@ -238,7 +251,7 @@ BOT        = Poitns corresponding to the downsampled laser OFF
 #New
     #Downsample the array
     [f, g] = spec.spec(sums, dt)
-    cut = np.where(abs(f) > 2 * nyq)
+    cut = np.where(abs(f) > nyq)
     g[cut] = 0
     [t, sums_ds] = spec.ispec(g, f)
     sums_ds = np.abs(sums_ds)
@@ -255,15 +268,11 @@ BOT        = Poitns corresponding to the downsampled laser OFF
     #together, then eliminate them.
     su = np.roll(su, phs)[osample:]
     sd = np.roll(sd, phs)[osample:]
-    if duty == 0.5:
-        TOP = sig.resample(su, len(su) * nyq * 2 * dt)
-        BOT = sig.resample(sd, len(sd) * nyq * 2 * dt)
-    else:
-        on = duty * osample
-        off = (1 - duty) * osample
-        #Get rid of zerod elements and average over remaining columns
-        TOP = np.mean(su.reshape(len(su) / osample, osample)[:, 0:on], 1)
-        BOT = np.mean(sd.reshape(len(sd) / osample, osample)[:, on:],1)
+    on = duty * osample
+    off = (1 - duty) * osample
+    #Get rid of zerod elements and average over remaining columns
+    TOP = np.mean(su.reshape(len(su) / osample, osample)[:, 0:on], 1)
+    BOT = np.mean(sd.reshape(len(sd) / osample, osample)[:, on:],1)
     return (TOP, BOT)
 
 
