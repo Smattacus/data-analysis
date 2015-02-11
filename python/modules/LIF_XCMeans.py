@@ -15,7 +15,7 @@ import spec
 import matplotlib as mpl
 from matplotlib import pyplot
 
-def genAllTPBoxFindPhase(path, Fc, Fa, duty):
+def genAllTPBoxFindPhase(path, Ta, Fc, Fa, duty=0.6, chan=0, ch1os=1, ch2os=1):
     '''
 Function to generate ALL the downsampled TOP and BOT arrays of LIF + Noise
 and noise data. 
@@ -31,14 +31,25 @@ This function finds all available files by searching for .h5 files. It
 will use all of them in the directory, so delete or move unwanted ones.
 
 INPUTS:
-   path     - Path to a directory of h5 files.
-   Fc       - Frequency of the square wave function. Generally, this is the
+   path     : Path to a directory of h5 files.
+   Ta       :   Total # of seconds of acquisition
+   Fc       : Frequency of the square wave function. Generally, this is the
             laser chop frequency
-   Fa       - Acquisition frequency.
-   duty     - Duty cycle of square wave to use in signal matching. Empirically,
+   Fa       : Acquisition frequency.
+   duty     : Duty cycle of square wave to use in signal matching. Empirically,
    .60 is the way to go.
-
+   chan=0   :   Which PMT channels. to analyze. chan=0 (default) does both.
+                    chan = 1 : PMT 1
+                    chan = 2 : PMT 2
+    ch1os   :   Displacement of channel 1 from the sumToTen() max. Check
+                    figure for verification of correct value.
+    ch2os   :   Displacement of channel 1 from the sumToTen() max. Check
+                    figure for verification of correct value.
+            NB: ch1os and ch2os default to 1, which means there is 1 sample of
+                rising LIF signal before the max is hit.
 OUTPUTS:
+    Depending on chan argument, either (TOP1, BOT1), (TOP2, BOT2) or (TOP1,
+    BOT1, TOP2, BOT2).
    TOP1 - NxM array of LIF +plasma data. N = number of files, M = # of points, PMT 1.
    BOT1 - NxM array of plasma data, PMT 1.
    TOP2 - NxM array of LIF + plasma data, PMT 2.
@@ -50,35 +61,12 @@ OUTPUTS:
     
     nfiles = np.size(l)
     #'r' flag opens as read only. 'w' will overwrite the file!!
-    f = h5py.File(l[0], 'r')
-    d = np.array(f['PMT_DATA_8BIT'])
-    #Python is row x column (row major), so the index for np.size is different than MATLAB's
-    N = np.size(d, 0)
-    total_t = N / Fa
-    base_phase = np.linspace(0 , 2 * np.pi * total_t * Fc, N, endpoint=False)
-    TOP1 = np.zeros((nfiles, N * Fc / Fa))
-    BOT1 = np.zeros((nfiles, N * Fc / Fa))
-    TOP2 = np.zeros((nfiles, N * Fc / Fa))
-    BOT2 = np.zeros((nfiles, N * Fc / Fa))
-    i=0
-    for x in l:
-        (p1, p2) = findMaxPhaseViaSum(x, total_t, Fa, Fc, False)
-        if np.size(p1) > 1 or np.size(p2) > 1:
-            print('Phase potentially zero for file = %s' % x)
-        sq1 = sig.square(p1 + base_phase)
-        sq2 = sig.square(p2 + base_phase)
-        print('Phase 1 = %f' % p1)
-        print('Phase 2 = %f' % p2)
-        d = np.array(h5py.File(x)['PMT_DATA_8BIT'])
-        s1 = np.sum(d[:,0:15], 1)
-        s2 = np.sum(d[:,16:], 1)
-        [T1, B1] = getTopBot(s1, sq1, 1/Fa, Fc/2, p1, duty, 10)
-        [T2, B2] = getTopBot(s2, sq2, 1/Fa, Fc/2, p2, duty, 10)
-        TOP1[i,:] = T1
-        BOT1[i,:] = B1
-        TOP2[i,:] = T2
-        BOT2[i,:] = B2
-    return (TOP1, BOT1, TOP2, BOT2)
+    TB = np.array([genTPBoxFindPhase(x, Ta, Fs, Fc, duty=duty, chan=chan,
+            ch1os=ch1os,ch2os=ch2os) for x in l])
+    if chan == 0:
+        return (TB[:,0,:], TB[:,1,:], TB[:,2,:], TB[:,3,:])
+    if chan == 1 or chan == 2:
+        return (TB[:,0,:], TB[:,1,:])
 
 def genTPBoxFindPhase(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0, ch1os =
         1, ch2os = 1):
@@ -123,6 +111,86 @@ def genTPBoxFindPhase(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0, ch1os =
         return (T2, B2)
     return 
 
+def genTPBoxFindPhaseOld(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0):
+    '''Generates the TOPs and BOTs of a single file for a given channel or both
+    channels.
+
+    INPUTS:
+        fn      :   Filename of the relevant data.
+        Ta      :   Total seconds of acquisition.
+        Fs      :   Sampling speed of the PMT counting circuitry.
+        Fc      :   Chop speed of the laser.
+        plots   :   Whether to make plots of the phases. Defaults to false.
+        duty=0.6:   Duty cycle of the square wave for alignment. Defaults to
+                    0.6.
+        chan=0  :   Which channel to get results for. Defaults to both channels
+                    (chan = 0). chan = 1 corresponds to PMT1, while chan = 2
+                    corresponds to PMT2.
+                NB: ch1os and ch2os default to 1, which means there is 1 sample of
+                rising LIF signal before the max is hit.
+    '''
+    (p1, p2) = findMaxPhase(fn, Ta, Fs, Fc, plots, duty=duty) 
+    d = np.array(h5py.File(fn, 'r')['PMT_DATA_8BIT'])
+    phasegen = np.linspace(0, 2 * np.pi * Fc * Ta, Ta * Fs, endpoint = False)
+    sq1 = sig.square(phasegen + p1, duty)
+    sq2 = sig.square(phasegen + p2, duty)
+    s1 = np.sum(d[:,0:16],1)
+    s2 = np.sum(d[:,16:],1)
+    if chan == 0:
+        (T1, B1) = getTopBot(s1, sq1, 1 / Fs, Fc / 2, p1, duty)
+        (T2, B2) = geetTopBot(s2, sq2, 1/Fs, Fc / 2, p2, duty)
+        return ([T1, B1], [T2, B2])
+    if chan == 1:
+        (T1, B1) = getTopBot(s1, sq1, 1/ Fs, Fc/2, p1, duty)
+        return (T1, B1)
+    if chan == 2:
+        (T2, B2) = getTopBot(s2, sq2, 1/Fs, Fc/2, p2, duty)
+        return (T2, B2)
+    return 
+
+def genTBChanSum(filename, Ta, Fs, Fc, plots=False, duty=0.6, s1range=(0,16),
+        s2range=(16,32), ch1os=1, ch2os=1):
+        '''
+        Method for finding the TOPs and BOTs given a certain range of PMT data
+        to run over. Instead of assuming that the two separate PMTs are from
+        channels [0:16) and [16:32) 
+        filename        :   Input file to read.
+        Ta              :   Number of seconds data were taken over
+        Fs              :   Sampling speed of data
+        Fc              :   Chop frequency of laser
+        plots=False     :   Generate plots? Defaults to False.
+        duty=0.6        :   Duty cycle of square wave. Defaults to 60 % on.
+        s1range=(0:16)  :   Indices for the first data set.
+        s2range=(16:32) :   Indices for the second data set.
+
+        If s2range is set to None, then the routine will find only one set
+        of TOPS / BOTTOMS.
+        
+        The phase value used for s1range and s2range will be picked depending
+        on which PMT the ranges fall in.
+        '''
+        d = np.array(h5py.File(filename, 'r')['PMT_DATA_8BIT'])
+        s1 = np.sum(d[:,s1range[0]:s1range[1]],1)
+        #Get the phase for each PMT.
+        (p1, p2) = findMaxPhaseViaSum(filename, Ta, Fs, Fc, plots=False,
+            plotname='temp.png', chan=0, ch1os=ch1os, ch2os=ch2os)
+        phasegen = np.linspace(0, 2 * np.pi * Fc * Ta, Ta * Fs, endpoint =
+            False)
+        #If s2range is on PMT1, use phase 1
+        if s2range[0] < 16 and s2range[1] << 16:
+            p2 = p1
+        #If s1range is on PMT2, use phase 2.
+        if s1range[0] >= 16 and s1range[1] >= 16:
+            p1 = p2
+        if s2range == None:
+             (T, B) = getTopBot(s1, sq, 1 / Fs, Fc / 2, p1, duty=0.6,
+                 osample=10) 
+             return (T, B)
+        sq = sig.square(p1 + phasegen, duty) 
+        s2 = np.sum(d[:,s2range[0]:s2range[1]],1)
+        (T1, B1) = getTopBot(s1, sq, 1/Fs, Fc / 2, p1, duty = 0.6, osample=10)
+        (T2, B2) = getTopBot(s2, sq, 1/Fs, Fc/2, p2, duty=0.6, osample=10)
+        return (T1, B1, T2, B2)
 
 def findMaxPhase(filename, Ta, Fs, Fc, plots, duty=0.5):
     '''
@@ -153,6 +221,10 @@ INPUTS:
     phase1 = p[im1]
     im2 = np.where(PMT2 == np.max(PMT2))
     phase2 = p[im2]
+    if len(phase1) > 1:
+        phase1 = phase1[0]
+    if len(phase2) > 1:
+        phase2 = phase2[0]
     return (phase1, phase2)
 
 def findMaxPhaseViaSum(filename, Ta, Fs, Fc, plots=False,
@@ -160,7 +232,7 @@ plotname='temp.png', chan=0, ch1os=1, ch2os=1):
     '''
     Makes a histogram of the file using sumToTen(). A major caveat in this
     routine is that it ASSUMES that the data takes one sample to rise to the
-    maximum LIF value - most data taken at 10:1 Fs:Fc (1 MHz sample, 100 KHz
+    maximum LIF value. Most data taken at 10:1 Fs:Fc (1 MHz sample, 100 KHz
     chop) seems to follow this.
 
     This routine returns a phase which is a multiple of 2 * pi / 10 based on
@@ -275,6 +347,16 @@ BOT        = Poitns corresponding to the downsampled laser OFF
     BOT = np.mean(sd.reshape(len(sd) / osample, osample)[:, on:],1)
     return (TOP, BOT)
 
+def sumDataToTen(d1, d2, Ta, Fs, Fc):
+    '''
+    Routine for histogram PMT data which has already been summed into
+    individual arrays.
+    INPUTS:
+        d1  :   
+    '''
+    s1rs = np.mean(d1.reshape(Ta * Fc, Fs / Fc), 0)
+    s2rs = np.mean(d2.reshape(Ta * Fc, Fs / Fc), 0)
+    return (s1rs, s2rs)
 
 def sumToTen(filename, Ta, Fs, Fc):
     '''
@@ -292,8 +374,8 @@ def sumToTen(filename, Ta, Fs, Fc):
     d = np.array(h5py.File(filename, 'r')['PMT_DATA_8BIT'])
     s1 = np.sum(d[:, 0:16], 1)
     s2 = np.sum(d[:,16:], 1)
-    s1rs = np.sum(s1.reshape(Ta * Fc, Fs / Fc), 0)
-    s2rs = np.sum(s2.reshape(Ta * Fc, Fs / Fc), 0)
+    s1rs = np.mean(s1.reshape(Ta * Fc, Fs / Fc), 0)
+    s2rs = np.mean(s2.reshape(Ta * Fc, Fs / Fc), 0)
     return (s1rs, s2rs)
 
 def plotHists(flist, Ta, Fs, Fc, target = '', chan=0):
@@ -330,4 +412,11 @@ def plotHists(flist, Ta, Fs, Fc, target = '', chan=0):
         pyplot.title('Plot for ' + fo)
         pyplot.savefig(fo)
 
-
+def xcorru(x, y):
+    '''
+    Takes an unbiased cross correlation.
+    '''
+    N = len(x)
+    xc = np.correlate(x, y, mode='full')
+    xc = xc / np.append(np.linspace(1, N, N), np.linspace(N-1, 1, N-1))
+    return xc
