@@ -15,7 +15,7 @@ import spec
 import matplotlib as mpl
 from matplotlib import pyplot
 
-def genAllTPBoxFindPhase(path, Ta, Fc, Fa, duty=0.6, chan=0, ch1os=1, ch2os=1):
+def genAllTPBoxFindPhase(path, Ta, Fs, Fc, duty=0.6, chan=0, ch1os=1, ch2os=1):
     '''
 Function to generate ALL the downsampled TOP and BOT arrays of LIF + Noise
 and noise data. 
