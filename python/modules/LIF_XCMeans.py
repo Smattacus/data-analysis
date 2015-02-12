@@ -101,7 +101,7 @@ def genTPBoxFindPhase(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0, ch1os =
     s2 = np.sum(d[:,16:],1)
     if chan == 0:
         (T1, B1) = getTopBot(s1, sq1, 1 / Fs, Fc / 2, p1, duty)
-        (T2, B2) = geetTopBot(s2, sq2, 1/Fs, Fc / 2, p2, duty)
+        (T2, B2) = getTopBot(s2, sq2, 1/Fs, Fc / 2, p2, duty)
         return ([T1, B1], [T2, B2])
     if chan == 1:
         (T1, B1) = getTopBot(s1, sq1, 1/ Fs, Fc/2, p1, duty)
