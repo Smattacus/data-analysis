@@ -64,7 +64,7 @@ OUTPUTS:
     TB = np.array([genTPBoxFindPhase(x, Ta, Fs, Fc, duty=duty, chan=chan,
             ch1os=ch1os,ch2os=ch2os) for x in l])
     if chan == 0:
-        return (TB[:,0,:], TB[:,1,:], TB[:,2,:], TB[:,3,:])
+        return (TB[:,0,0,:], TB[:,0,1,:], TB[:,1,0,:], TB[:,1,1,:])
     if chan == 1 or chan == 2:
         return (TB[:,0,:], TB[:,1,:])
 
