@@ -31,7 +31,8 @@ temp = h5read(list(1).name, '/PMT_DATA_8BIT');
 N = size(temp,2);
 total_t = N / Fa;
 
-base_phase = linspace(0, 2 * pi * total_t * Fc, N);
+
+base_phase = linspace(0, 2 * pi * total_t * Fc - 2 * pi / 10, N);
 
 TOP1 = zeros(nfiles, N * Fc / Fa);
 BOT1 = zeros(nfiles, N * Fc / Fa);
