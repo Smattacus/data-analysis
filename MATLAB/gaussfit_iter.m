@@ -63,7 +63,7 @@ X(:,1) = 1;
 X(:,2) = x;
 X(:,3) = (x.*x);
 
-
+w
 % try to estimate mean mu from the location of the maximum
 [ymax,index]=max(y);
 mu = x(index);

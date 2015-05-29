@@ -9,7 +9,7 @@
 %   H(f)=principal part integral over real axis {f(x')/(x'-x)}dx'/pi
 %
 %The Morrison transform has the form:
-%
+
 %   Psi=G(phi)=-alp*H(phi)+bet*phi
 %
 %Where alp and bet are functions also related by a Hilbert transform:
