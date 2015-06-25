@@ -31,7 +31,7 @@ temp = h5read(list(1).name, '/PMT_DATA_8BIT');
 N = size(temp,2);
 total_t = N / Fa;
 
-base_phase = linspace(0, 2 * pi * total_t * Fc, N);
+base_phase = genBasePhase(total_t);
 
 TOP1 = zeros(nfiles, N * Fc / Fa);
 BOT1 = zeros(nfiles, N * Fc / Fa);
@@ -40,16 +40,18 @@ BOT2 = zeros(nfiles, N * Fc / Fa);
 
 for i=1:size(list,1)
     fn = list(i).name;
-    [p1, p2] = findMaxPhase(fn, total_t, Fa, Fc, false);
+    [p1, p2] = findMaxPhase(fn, total_t, Fa, Fc, true);
     if size(p1,1) > 1 || size(p1,2) > 1
         %This should only happen if p1 or p2 is = 0.
-        sprintf('Phase potentially zero for file = %s, Ch1.', fn);
-        p1 = 0;
+        display(sprintf('Phase longer than one element for file = %s, Ch1.', fn));
+        display('Taking first element of phase 1 array');
+        p1 = p1(1);
     end
     if size(p2,1) > 1 || size(p2,2) > 1
         %This should only happen if p1 or p2 is = 0.
-        sprintf('Phase potentially zero for file = %s, Ch2.', fn);
-        p2 = 0;
+        display(sprintf('Phase longer than one element for file = %s, Ch1.', fn));
+        display('Taking first element of phase 2 array');
+        p2 = p2(1);
     end
     square1 = square(p1 + base_phase);
     square2 = square(p2 + base_phase);

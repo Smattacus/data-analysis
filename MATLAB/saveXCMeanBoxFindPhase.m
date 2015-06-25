@@ -19,8 +19,8 @@ cd(path);
 %For now, use defaults:
 [T1, B1, T2, B2] = genAllTPBoxFindPhase(path, sq_freq, acq_freq);
 list_data = dir(sprintf('%s/*.h5', path));
-D1 = T1 - B1;
-D2 = T2 - B2;
+D1 = (T1 - B1) * 2;
+D2 = (T2 - B2) * 2;
 ave1 = mean(D1.');
 ave2 = mean(D2.');
 remove_ind = [];

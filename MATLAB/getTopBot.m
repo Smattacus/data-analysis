@@ -15,6 +15,7 @@ function [TOP, BOT] = getTopBot(sums, squares, dt, nyq)
     sb = sums .* (-squares + 1) / 2;
     [f, gu] = spec(su, dt);
     [f, gb] = spec(sb, dt);
+    %change > < if returning to resample and change cut usage
     cut = find(abs(f) > nyq);
     gu(cut) = 0;
     gb(cut) = 0;
