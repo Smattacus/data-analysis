@@ -9,7 +9,7 @@
 %The Morrison inverse transform has the form:
 %
 %   phi=G'(phi)=-zet*H(psi)+csi*psi
-%
+
 %Where zet and csi are functions also related by a Hilbert transform:
 %In terms of the alpha and beta of the forward transform:
 %   csi=bet/(alp^2+bet^2),  zet=-alp/(alp^2+bet^2)
