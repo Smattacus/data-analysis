@@ -106,3 +106,24 @@ def spec2d(x, dt):
     f2 = (linspace(1, n2, n2) - (n2 + (1 + (n2 % 2 ==0 )))/2) * f0_2
     P = fp.fftshift(P)
     return f1, f2, P
+
+def ispec2d(g, df):
+    """Returns the original, inverse FFTshifted power spectrum.
+
+    USAGE:
+        [t1, t2, x] = ispec2d(g, df)
+
+    INPUTS:
+        x   -   
+
+    """
+    n1 = g.shape[0]
+    n2 = g.shape[1]
+    X = fp.ifftshift(g)
+    X = fp.ifft2(X) * sqrt(n1) * sqrt(n2)
+    t0_1 = 1 / abs(n1 * df)
+    t0_2 = 1 / abs(n2 * df)
+    t1 = (linspace(1, n1, n1) - (n1 + (1 + (n1 % 2 ==0 )))/2) * t0_1
+    t2 = (linspace(1, n1, n1) - (n1 + (1 + (n1 % 2 ==0 )))/2) * t0_2
+    return t1, t2, X
+
