@@ -610,7 +610,7 @@ def Diode_Values():
     tf = 1.0/1.326e8
     return (RSf, RSi, Ef, Ei, tf)
 
-def ZeemanSpec_Padded(wld, s, RSi, RSf, Ei, Ef, ts, P, B, roll=0):
+def ZeemanSpec_Padded(wld, s, RSi, RSf, Ei, Ef, ts, P, B, roll=0, amps = 1):
     """
         Creates a padded Zeeman array with 10x + 1 the number of elements of
         the original wavelength array, finds a spectrum, then returns the
@@ -626,25 +626,47 @@ def ZeemanSpec_Padded(wld, s, RSi, RSf, Ei, Ef, ts, P, B, roll=0):
         Ef      -   Energy for lower level of transition.
         ts      -   Tuple of mean lifetimes for upper and lower states. A one
                     element tuple is fine.
-        P       -   Polarization of desired transition.
+        P       -   tuple of desired polarizations.
         roll    -   (Optional) # to roll the padded wavelength array.
+        amp_scale   -   (float, tuple, Optional) Tuple of relative scalings for the groups of
+                         amplitudes. Each element corresponds to the tuple elements of P.
         OUTPUTS:
         (ZPSC, wldp, ZP)
         ZPSC    -   Zeeman spectrum reduced back to wld size.
         wldp    -   Padded wavelength array.
         ZP      -   Padded Zeeman profile.
     """
-    wldp = np.linspace(wld[0], wld[-1], 10 * np.size(wld) + 1)
-    lns = Zeeman_Lines(RSi, RSf, Ei, Ef, wldp, P, B, ts)
+    wldp = np.linspace(wld[0], wld[-1], 10 * (np.size(wld) - 1) + np.size(wld))
+    lns = wldp * 0 
+    even = 1 - np.size(wld) % 2
+    if amps == 1:
+        for p in P:
+            lns += Zeeman_Lines(RSi, RSf, Ei, Ef, wldp, p, B, ts)
+    else:
+        for x in zip(P, amps):
+            lns += x[1] * Zeeman_Lines(RSi, RSf, Ei, Ef, wldp, x[0], B, ts)
     lns = lns / np.max(lns) * np.max(s)
     [f, gl] = spec.spec(lns, wldp[1] - wldp[0])
     gl = gl * np.sqrt(float(np.size(gl)) / float(np.size(wld)))
-    glc = gl[(np.size(gl)) / 2 - (np.size(wld)) / 2 : (np.size(gl))
-            / 2 + (np.size(wld)) / 2 + 1]
+    #Grab the middle n elements. Adjust the indices for whether the size of 
+    #wld is odd or even.
+    #NB: np.size(x) / 2 is truncated if x is odd.
+    glc = gl[(np.size(gl) / 2) - (np.size(wld)) / 2 :
+            (np.size(gl) / 2 - (1 - np.size(wld) % 2)) + (np.size(wld)) / 2 + 1]
     return (glc, wldp, lns)
 
+def fga(x, params):
+    A = params[0]
+    M = params[1]
+    S = params[2]
+    C = params[3]
+    return A * np.exp(-(x - M)**2 / (2 * S**2)) + C
+
+def fga_disc(x, A, M, S, C):
+    return A * np.exp(-(x - M)**2 / (2 * S**2)) + C
 
 
 def find_nearest(array,value):
     idx = (np.abs(array-value)).argmin()
     return array[idx]
+
