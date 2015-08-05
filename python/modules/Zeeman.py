@@ -591,7 +591,7 @@ def Dye_Values():
     #tf = 1.0 / 2e7
     #The mean:
     tf = 1.0/1.187e8
-    return (RSf, RSi, Ef, Ei, tf)
+    return (RSi, RSf, Ei, Ef, (tf,))
 
 def Diode_Values():
     """
@@ -608,7 +608,7 @@ def Diode_Values():
     #tf = 1.0 / 1.07e7
     #The mean:
     tf = 1.0/1.326e8
-    return (RSf, RSi, Ef, Ei, tf)
+    return (RSi, RSf, Ei, Ef, (tf,))
 
 def ZeemanSpec_Padded(wld, s, RSi, RSf, Ei, Ef, ts, P, B, roll=0, amps = 1):
     """
