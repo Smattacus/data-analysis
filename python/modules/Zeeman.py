@@ -610,7 +610,7 @@ def Diode_Values():
     tf = 1.0/1.326e8
     return (RSi, RSf, Ei, Ef, (tf,))
 
-def ZeemanSpec_Padded(wld, s, RSi, RSf, Ei, Ef, ts, P, B, roll=0, amps = 1):
+def ZeemanSpec_Padded(wld, s, P, B, RSi, RSf, Ei, Ef, ts, roll=0, amps = 1):
     """
         Creates a padded Zeeman array with 10x + 1 the number of elements of
         the original wavelength array, finds a spectrum, then returns the
@@ -620,13 +620,14 @@ def ZeemanSpec_Padded(wld, s, RSi, RSf, Ei, Ef, ts, P, B, roll=0, amps = 1):
         wld     -   Wavelengths. The first and last values are used to generate
             the padded array, while the length is used to cut down the spectrum.
         s       -   Spectrum. Used to scale the zeeman profile.
+        P       -   tuple of desired polarizations.
+        B       -   magnetic field.
         RSi     -   RS term for upper level of transition.
         RSf     -   RS term for lower level of transition.
         Ei      -   Energy for upper level of transition.
         Ef      -   Energy for lower level of transition.
         ts      -   Tuple of mean lifetimes for upper and lower states. A one
                     element tuple is fine.
-        P       -   tuple of desired polarizations.
         roll    -   (Optional) # to roll the padded wavelength array.
         amp_scale   -   (float, tuple, Optional) Tuple of relative scalings for the groups of
                          amplitudes. Each element corresponds to the tuple elements of P.
