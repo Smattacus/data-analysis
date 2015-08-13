@@ -79,7 +79,7 @@ OUTPUTS:
 #2D arrays.
 
 #2D version of spec,
-def spec2d(x, dt):
+def spec2d(x, dtx, dty):
     """Returns the normalized, fftshifted power spectrum. The spectrum is
     normalized according to 1/sqrt(x.shape[0]) 1 / sqrt(x.shape[1]). fft is
     performed along each row and column, and then each row and column is
@@ -90,8 +90,8 @@ def spec2d(x, dt):
 
     INPUTS:
         x   - 2D numpy array of data to perform the fft2 on.
-        dt  - time element between array elements. (Scalar).
-
+        dtx     - time element between x array elements. (Scalar).
+        dty     - Time element betweern y array elements.
     OUTPUTS:
         f1   - Frequency array for axis 1.
         f2  - Frequency array for axis 2.
@@ -99,30 +99,32 @@ def spec2d(x, dt):
     """
     n1 = x.shape[0]
     n2 = x.shape[1]
-    f0_1 = 1 / abs(n1 * dt)
-    f0_2 = 1 / abs(n2 * dt)
+    f0_1 = 1 / abs(n1 * dtx)
+    f0_2 = 1 / abs(n2 * dty)
     P = fp.fft2(x) / sqrt(n1) / sqrt(n2)
     f1 = (linspace(1, n1, n1) - (n1 + (1 + (n1 % 2 ==0 )))/2) * f0_1
     f2 = (linspace(1, n2, n2) - (n2 + (1 + (n2 % 2 ==0 )))/2) * f0_2
     P = fp.fftshift(P)
     return f1, f2, P
 
-def ispec2d(g, df):
+def ispec2d(g, df1, df2):
     """Returns the original, inverse FFTshifted power spectrum.
 
     USAGE:
-        [t1, t2, x] = ispec2d(g, df)
+        [t1, t2, x] = ispec2d(g, df1, df2)
 
     INPUTS:
-        x   -   
+        g   -   Spectra to invert.
+        df1 -   Frequency step of first dimension.
+        df2 -   Frequency step of second dimension.
 
     """
     n1 = g.shape[0]
     n2 = g.shape[1]
     X = fp.ifftshift(g)
     X = fp.ifft2(X) * sqrt(n1) * sqrt(n2)
-    t0_1 = 1 / abs(n1 * df)
-    t0_2 = 1 / abs(n2 * df)
+    t0_1 = 1 / abs(n1 * df1)
+    t0_2 = 1 / abs(n2 * df2)
     t1 = (linspace(1, n1, n1) - (n1 + (1 + (n1 % 2 ==0 )))/2) * t0_1
     t2 = (linspace(1, n1, n1) - (n1 + (1 + (n1 % 2 ==0 )))/2) * t0_2
     return t1, t2, X
