@@ -656,6 +656,40 @@ def ZeemanSpec_Padded(wld, s, P, B, RSi, RSf, Ei, Ef, ts, roll=0, amps = 1):
             (np.size(gl) / 2 - (1 - np.size(wld) % 2)) + (np.size(wld)) / 2 + 1]
     return (glc, wldp, lns)
 
+def ZeemanSpec_Padded_Grid(grid, scale_specs, P, B, RSi, RSf, Ei, Ef, ts, roll=0,
+        amps = 1):
+    """
+        Create a Zeeman spectrum corresponding to a padded version of an
+        interpolation griddata set.
+
+        (glc, wldp, lns, scales) = ZeemanSpec_Padded_Grid(grid, scale_specs, P,
+        B, RSi, Rsf, Ei, Ef, ts)
+
+        INPUTS:
+        grid            :   array vector from the meshgrid x or y data set.
+        scale_specs     :   IVDF scan Spectra to rescale the different Zeeman
+                            spectra by. Corresponds to x or y data set of grid.
+                            Assumed to be a list of spectra.
+        P               :   Polarization(s) of desired transition. Given in tuple
+                                form. Length 1 tuple is fine.
+        B               :   Magnetic field.
+        RSi             :   RS term of initial level.
+        RSf             :   RS term of final level.
+        Ei              :   Energy level of initial level.
+        Ef              :   Energy level of final level.
+        ts              :   tuple of lifetimes for (Initial, final) levels.
+
+        RETURNS:
+        glc             :   
+
+    """
+    (glc, wldp, lns) = ZeemanSpec_Padded(grid, scale_specs[0], P, B, RSi, RSf,
+            Ei, Ef, ts)
+    #Create an array of scales that can be used to generate the other spectra.
+    scales = [np.max(x) / np.max(scale_specs[0]) for x in scale_specs]
+    return (glc, wldp, lns, scales)
+
+
 def fga(x, params):
     A = params[0]
     M = params[1]
