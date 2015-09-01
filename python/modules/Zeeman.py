@@ -164,6 +164,24 @@ def Transitions(Ez_i, Mz_i, RS_i, Ez_f, Mz_f, RS_f):
     Mtot = Mpairs_0 + Mpairs_p1 + Mpairs_n1
     return (Etot, Wtot, Ptot, Mtot)
 
+def getAmpCents(P, B, RSi, RSf, Ei, Ef):
+    """
+        Helper function to return the amplitudes and locations of the peaks of
+        the Lorentzian.
+    """
+    (Ez_f, Mz_f) = Splittings(Ef, RSf, B)
+    (Ez_i, Mz_i) = Splittings(Ei, RSi, B)
+    (Et, Wt, Pt, Mt) = Transitions(Ez_i, Mz_i, RSi, Ez_f, Mz_f, RSf)
+    At = Amplitudes(RSi, RSf, Mt)
+    Zinfo = np.array([Et, Wt * 1e7, At, Pt, np.array(Mt)[:,0], np.array(Mt)[:,1]]).transpose()
+    #Zinfo_P now contains the Energy | Wavelength (nm) | Amplitude |
+    #Polarization | Mz_I | Mz_F 
+    #of the transitions with Polarization = P.
+    Zinfo_P = Zinfo[np.where(Zinfo[:,3] == P), :][0]
+    Amps = Zinfo_P[:,2]
+    Cents = Zinfo_P[:,1]
+    return (Amps, Cents)
+
 def Amplitudes(RSi, RSf, Mt):
     """
         Calculates the amplitudes of the transitions given by
@@ -329,7 +347,8 @@ def ZL(Amp, Cent, ts, wavelengths, velocity=0):
     S = Amp / np.pi * (1 / s0) / (1 + ((IC - wlcm) / s0)**2)
     return S
 
-def Zeeman_Lines(RSi, RSf, Ei, Ef, wavelengths, P, B, tls, velocity = 0):
+def Zeeman_Lines(RSi, RSf, Ei, Ef, wavelengths, P, B, tls, velocity = 0,
+        indiv=False):
     """
         Returns the broadened Zeeman lines corresponding to a certain spectrum.
 
@@ -354,9 +373,16 @@ def Zeeman_Lines(RSi, RSf, Ei, Ef, wavelengths, P, B, tls, velocity = 0):
 
     #Amplitudes and centers are all we need
     Ltot = np.zeros(np.size(wavelengths))
-    for x in zip(Amps, Cents):
-        Ltot += ZL(x[0], x[1], tls, wavelengths, velocity=velocity)
-    return Ltot
+    if indiv == False:
+        for x in zip(Amps, Cents):
+            Ltot += ZL(x[0], x[1], tls, wavelengths, velocity=velocity)
+        return Ltot
+    elif indiv == True:
+        #return a list of each individual Lorentzian.
+        ls = []
+        for x in zip(Ampts, Cents):
+            ls.append(ZL(x[0], x[1], tls, wavelengths, velocity=velocity))
+        return ls
 
 def ZeemanFitFunc_VaryB(RSi, RSf, Ei, Ef, P, B, tls, wavelengths, s):
     """
@@ -592,6 +618,17 @@ def Dye_Values():
     #The mean:
     tf = 1.0/1.187e8
     return (RSi, RSf, Ei, Ef, (tf,))
+
+def Dye_Lifes():
+    t1 = 2.0e5
+    t2 = 6.1e6
+    t3 = 7.89e7
+    t4 = 8e5
+    t5 = 3.7e6
+    t6 = 8.1e6
+    t7 = 2e7
+    t8 = 9e5
+    return t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8
 
 def Diode_Values():
     """
