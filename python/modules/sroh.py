@@ -2,8 +2,13 @@
 #Contains function get arrays and addresses for data files.
 import glob
 import numpy as np
+import clean
+import spec
 
 def getDiodePoints():
+    '''
+    Returns the diode points from the logbook.
+    '''
     #Hand checking, these match the entries in my logbook.
     diode_points = [
     668.61091,  
@@ -33,6 +38,11 @@ def getDiodePoints():
 #Rels
 #From the dye handconvolve fits
 def getRels():
+    '''
+    Returns the shifts relative to the first day of data's fitted gaussian.
+    This is on a daily basis - check the fitting file
+    /home/sean/data/SeanRunOne/Programs/dye_handconvolves.ipynb
+    '''
     #These shifts are given relative to the first day's fitted Gaussian.
     #i.e., (fits) - (first gaussian)
     rels = np.array([  0.00000000e+00, #4-28-15 [0]
@@ -55,9 +65,12 @@ def getRels():
     return rels
 
 def getDyeIVDFFiles():
+    '''
+        Returns the text files corresponding to the measured dye IVDFs.
+    '''
     ivdflist= [ 
             '/home/sean/data/SeanRunOne/XCMeans/IVDFS/DYE_Apr28_2015.txt', # -10
-            '/home/sean/data/SeanRunOne/XCMeans/IVDFS/DYE_Apr23_2015.txt.txt', # -9, -8
+            '/home/sean/data/SeanRunOne/XCMeans/IVDFS/DYE_Apr23_2015.txt', # -9, -8
             '/home/sean/data/SeanRunOne/XCMeans/IVDFS/DYE_Apr17_2015_higherP.txt', # -7, -6
             '/home/sean/data/SeanRunOne/XCMeans/IVDFS/DYE_Apr14_2015.txt', # +5, -5
             '/home/sean/data/SeanRunOne/XCMeans/IVDFS/DYE_Apr10_2015.txt', # -3, -4
@@ -75,7 +88,73 @@ def getDyeIVDFFiles():
             ]
     return ivdflist
 
+def getCleanedDyeIVDFS(fwin = 1500):
+    '''
+        Acuires and returns cleaned Dye IVDFS. Default f window size of 1500
+        nm^-1.
+        INPUTS:
+        fwin=1500    :  Chooses the range outside of which to zero the
+        spectrum.   
+        OUTPUTS:
+        (dye_dyes, dye_cleanedivdfs)
+        dye_days    :   Corresponding data file for the output data.
+        dye_cleanedivdfs        :   Tuple of (wavelength, data).
+    '''
+    rels = getDyeIVDFRels()
+    dye_cleanedivdfs = []
+    dye_days = []
+    fl = getDyeIVDFFiles()
+    for x in rels:
+        dye_days.append(fl[x])
+        d = np.loadtxt(fl[x], skiprows=1)
+        R = np.sqrt(d[:,2]**2 + d[:,3]**2)
+        wl = d[:,0]
+        (wlc, rc) = clean.clean(wl, R)
+        [f, g] = spec.spec(rc, wlc[1]- wlc[0])
+        fi = np.where(np.abs(f) > fwin)
+        g[fi] = 0
+        [t, rcf] = spec.ispec(g, f[1]- f[0])
+        dye_cleanedivdfs.append((wlc, rcf))
+    return (dye_days, dye_cleanedivdfs)
+
+def getCleanedDiodeIVDFS(fwin = 1500):
+    '''
+        Acuires and returns cleaned Dye IVDFS. Default f window size of 1500
+        nm^-1.
+        INPUTS:
+        fwin=1500    :  Chooses the range outside of which to zero the
+        spectrum.   
+        OUTPUTS:
+        diode_cleanedivdfs        :   Tuple of (wavelength, data).
+    '''
+    rels = getDyeIVDFRels()
+    di_civdfs = []
+    di_days = []
+    fl = getDyeIVDFFiles()
+    for x in rels:
+        if 'Apr8' in fl[x]:
+            di_civdfs.append(np.array([[],[]]))
+            continue
+        d = np.loadtxt(fl[x].replace('DYE','DIODE'), skiprows=1)
+        R = np.sqrt(d[:,2]**2 + d[:,3]**2)
+        wl = d[:,0]
+        (wlc, rc) = clean.clean(wl, R)
+        #Get rid of high freq noise too
+        [f, g] = spec.spec(rc, wlc[1] - wlc[0])
+        fi = np.where(np.abs(f) > 1500)
+        g[fi] = 0
+        [t, rcf] = spec.ispec(g, f[1] - f[0])
+        di_civdfs.append((wlc, rcf))
+    return di_civdfs
+
+def getDyeIVDFRels():
+    return [0, 1, 1, 2, 2, 3, 4, 4, 5, 6, 7, 8, 8, 9, 10, 3, 11, 12, 13, 14,
+            15]
+
 def getDiIVDFFiles():
+    '''
+        returns the text files corresponding to the measured diode IVDFs.
+    '''
     #Unfortunately, the data file for April 8th is gone (overwritten accidentally).
     dilist = [ '/home/sean/data/SeanRunOne/XCMeans/IVDFS/DIODE_Apr28_2015.txt',
             '/home/sean/data/SeanRunOne/XCMeans/IVDFS/DIODE_Apr23_2015.txt',
@@ -97,6 +176,10 @@ def getDiIVDFFiles():
     return dilist
 
 def getDataDirs():
+    '''
+    Returns the directories which have .mat data files - corresponding to each
+    Dye measurement. (Each folder corresponds to one Diode setting.)
+    '''
     dirlist = [ '/home/sean/data/SeanRunOne/XCMeans/04-28-15/Diode_N10Step',
     '/home/sean/data/SeanRunOne/XCMeans/04-23-15/Diode_N9Step',
     '/home/sean/data/SeanRunOne/XCMeans/04-23-15/Diode_N8Step',
@@ -121,18 +204,34 @@ def getDataDirs():
     return dirlist
 
 def getShiftIndices():
+    '''
+    Indexing to map the shifts to a 21 element long array corresponding to each
+    Diode setting. They were taken on different days, while some days had more
+    than one diode setting.
+
+    The measured shifts are assumed to be constant on each day, so there are
+    repeats to fill the 21 as a result.
+    '''
     shift_indices = (np.array([0, 1, 1,
     2, 2, 4, 5, 5, 6, 7, 8, 9, 9, 10, 11, 4, 12, 13, 14, 15, 16]),)
     return shift_indices 
 
 def getDiodeWavelengths():
+    '''
+    Obtains and returns the wavelengths of the Diode measurements. These
+    wavelengths are shifted by the amounts in getRels() automatically.
+    '''
     di_p = getDiodePoints()
     s_i = getShiftIndices()
     shift = getRels()[s_i]
-    new_di_p = [x[0] + x[1] for x in zip(di_p, shift)]
+    new_di_p = [x[0] - x[1] for x in zip(di_p, shift)]
     return new_di_p
 
-def getDyeWavelengths(): 
+def getDyeNoShifts(): 
+    '''
+    Obtains and returns the wavelengths of the Dye measurements. These
+    wavelengths are shifted by the amounts in getRels() automatically.
+    '''
     dl = getDataDirs()
     shift_indices = getShiftIndices()
     shifts = getRels()[shift_indices]
@@ -145,3 +244,20 @@ def getDyeWavelengths():
         dye_wls.append([float(y.split('/')[-1].split('_')[-1].split('.')[0].replace('p','.'))
             for y in temp])
     return dye_wls
+
+def getDyeWavelengths():
+    '''
+    Obtains and returns the unshifted Dye wavelength values.
+    '''
+    dyes = getDyeNoShifts()
+    si = getShiftIndices()
+    shifts = getRels()[si]
+    dyeshifts = np.vstack([np.array(x[0]) - x[1] for x in zip(dyes, shifts)])
+    return dyeshifts
+
+def getNearestIndex(arr, val):
+    '''
+    Returns the index of the nearest element to val.
+    '''
+    return min(range(len(arr)), key=lambda i: abs(arr[i] - val))
+
