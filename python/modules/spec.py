@@ -10,7 +10,7 @@ from math import sqrt
 
 #These functions assume 1d arrays.
 
-def spec(x, dt):
+def spec(x, dt, axis=-1):
     """
 Returns the normalized power spectrum (1 / sqrt(n) forward, 1 / sqrt(n)
 backwards). This is so that Perseval's rule may be used easily.
@@ -24,12 +24,12 @@ OUTPUTS:
     f   - Frequency Array
     g   - FFT array.
     """
-    n = size(x)
+    n = x.shape[axis]
     f0 = 1/abs(n * dt)
-    P = sp.fftpack.fft(x)/sqrt(n)
+    P = sp.fftpack.fft(x, axis=axis)/sqrt(n)
     #Generate an array 1:N, subtract (N + 1) /2 if odd, (N+2)/2 if even.
     f = (linspace(1, n, n) - (n + (1 + (n % 2 ==0 )))/2) * f0
-    P = fp.fftshift(P)
+    P = fp.fftshift(P, axes=axis)
     return f, P
 
 def spec_dct(x, dt):
