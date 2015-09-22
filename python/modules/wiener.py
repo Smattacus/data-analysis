@@ -4,7 +4,7 @@ import numpy as np
 
 def FilterWhiteNoise(f, H, S, fwn):
     """
-        Filters using a wiener filter a spectrum assuming that white noise is
+        Filters, using a wiener filter, a spectrum assuming that white noise is
         the primary source of noise. Does windowing to estimate the noise.
 
         INPUTS:
@@ -40,3 +40,9 @@ def WienerFilter(H, S, N):
     """
     G = 1 / H * (np.abs(H)**2 / (np.abs(H)**2 + N / S))
     return G
+
+def WienerFilter2D(xg1, xg2, S, H, N):
+    '''
+    Implements a wiener filter on a two dimensional matrix (generally one
+    created with meshgrid)
+    '''
