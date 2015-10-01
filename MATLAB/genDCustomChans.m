@@ -29,8 +29,13 @@ s = zeros(size(data,2), 1);
 base_phase = genBasePhase(total_t);
 
 [p1, p2] = findMaxPhase(fname, total_t, Fs, Fc, true);
-%This assumes that size(p1) = size(p2) = 1. If it's not, the file is probably
-%borked.
+%Uses the first max phase that's found. Should be a plateau.
+if size(p1,1) > 1
+    p1 = p1(1)
+end
+if size(p2,1) > 1
+    p2 = p2(1)
+end
 sq1 = square(p1 + base_phase);
 sq2 = square(p2 + base_phase);
 display(sprint('Phase 1 = %f', p1));
