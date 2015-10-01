@@ -65,9 +65,9 @@ for i=1:Nv
             %use the square wave for PMT1 (hopefully they're the same).
             [T, B] = getTopBot(s, sq1, 1/Fs, Fc/2);
             display('Beware! Using phase from PMT1 for channel sum across PMT1 & PMT 2')
-        D = T - B;
-        diffs(i) = mean(D);
         end
+    D = T - B;
+    diffs(i) = mean(D);
     else
         cs = size(chans);
         cs = cs(1);
