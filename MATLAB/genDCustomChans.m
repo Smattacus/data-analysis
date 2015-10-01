@@ -39,7 +39,7 @@ display(sprint('Phase 2 = %f', p2));
 diffs = zeros(Nv, 1)
 
 %Iterate through each entry of varargin.
-for i in 1:Nv
+for i=1:Nv
     chans = varargin(i);
     s = zeros(size(data,2), 1)
     if ischar(chans):
@@ -64,7 +64,7 @@ for i in 1:Nv
     else
         cs = size(chans);
         cs = cs(1);
-        for j in 1:cs
+        for j=1:cs
             s = s + data(chans(j), :)
         end
         if chans(1) <= 16
