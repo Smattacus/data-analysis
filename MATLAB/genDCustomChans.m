@@ -51,9 +51,9 @@ for i=1:Nv
     if ischar(chans)
         %Assumed to be of form 'N1-N2'
         %e.g. 8-15
-        Cb = strsplit(chans, '-');
-        N1 = Cb(1);
-        N2 = Cb(2);
+        Cb = textscan(chans, '%d-%d');
+        N1 = Cb{1};
+        N2 = Cb{2};
         s = sum(data(N1:N2, :));
         %WARNING: Using phase generated from PMT #1!!!.
         if N1 <= 16 && N2 <= 16
