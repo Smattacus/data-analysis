@@ -46,7 +46,7 @@ diffs = zeros(Nv, 1);
 
 %Iterate through each entry of varargin.
 for i=1:Nv
-    chans = varargin(i);
+    chans = varargin{i};
     s = zeros(size(data,2), 1);
     if ischar(chans)
         %Assumed to be of form 'N1-N2'
