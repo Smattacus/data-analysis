@@ -77,6 +77,5 @@ for i=1:Nv
         diffs(i) = mean(D);
     end
 end
-return diffs
 
 
