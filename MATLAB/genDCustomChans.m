@@ -31,10 +31,10 @@ base_phase = genBasePhase(total_t);
 %change boolean "true" to "false" to stop graph display
 [p1, p2] = findMaxPhase(fname, total_t, Fs, Fc, true);
 %Uses the first max phase that's found. Should be a plateau.
-if size(p1,1) > 1
+if size(p1,2) > 1
     p1 = p1(1)
 end
-if size(p2,1) > 1
+if size(p2,2) > 1
     p2 = p2(1)
 end
 sq1 = square(p1 + base_phase);
