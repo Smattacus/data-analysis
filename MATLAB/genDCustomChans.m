@@ -17,7 +17,7 @@ function LIFS = genDCustomChans(fname, Ta, Fs, Fc, varargin)
 %
 
 %Number of variable inputs
-Nv = - nargin - 4;
+Nv = nargin - 4;
 
 %Load the data and find the phase.
 data = h5read(fname, '/PMT_DATA_8BIT');
