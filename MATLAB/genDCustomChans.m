@@ -24,7 +24,7 @@ data = h5read(fname, '/PMT_DATA_8BIT');
 N = size(data,2);
 total_t = N/Fs;
 
-s = zeros(size(data,2), 1);
+s = zeros(1, size(data,2));
 
 base_phase = genBasePhase(total_t);
 
