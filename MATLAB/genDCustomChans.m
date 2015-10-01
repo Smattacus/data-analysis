@@ -52,7 +52,7 @@ for i=1:Nv
         %WARNING: Using phase generated from PMT #1!!!.
         if N1 <= 16 && N2 <= 16
             [T, B] = getTopBot(s, sq1, 1/Fs, Fc/2);
-        else if N1 > 16 && N2 > 16
+        elseif N1 > 16 && N2 > 16
             [T, B] = getTopBot(s, sq2, 1/Fs, Fc/2);
         else
             %If N1 and N2 ranges over two difference PMTs, then just
