@@ -73,6 +73,7 @@ for i=1:Nv
             [T, B] = getTopBot(s, sq2, 1/Fs, Fc/2);
         D = T - B;
         diffs(i) = mean(D);
+    end
 end
 return diffs
 
