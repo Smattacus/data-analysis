@@ -28,6 +28,7 @@ s = zeros(size(data,2), 1);
 
 base_phase = genBasePhase(total_t);
 
+%change boolean "true" to "false" to stop graph display
 [p1, p2] = findMaxPhase(fname, total_t, Fs, Fc, true);
 %Uses the first max phase that's found. Should be a plateau.
 if size(p1,1) > 1
