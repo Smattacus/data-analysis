@@ -24,7 +24,6 @@ data = h5read(fname, '/PMT_DATA_8BIT');
 N = size(data,2);
 total_t = N/Fs;
 
-s = zeros(1, size(data,2));
 
 base_phase = genBasePhase(total_t);
 
@@ -72,7 +71,7 @@ for i=1:Nv
         cs = size(chans);
         cs = cs(1);
         for j=1:cs
-            s = s + data(chans(j), :);
+            s = s + double(data(chans(j), :));
         end
         if chans(1) <= 16
             [T, B] = getTopBot(s, sq1, 1/Fs, Fc/2);
