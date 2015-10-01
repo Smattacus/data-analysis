@@ -41,14 +41,14 @@ diffs = zeros(Nv, 1)
 %Iterate through each entry of varargin.
 for i=1:Nv
     chans = varargin(i);
-    s = zeros(size(data,2), 1)
-    if ischar(chans):
+    s = zeros(size(data,2), 1);
+    if ischar(chans)
         %Assumed to be of form 'N1-N2'
         %e.g. 8-15
-        Cb = strsplit(chans, '-')
-        N1 = Cb(1)
-        N2 = Cb(2)
-        s = sum(data(N1:N2, :))
+        Cb = strsplit(chans, '-');
+        N1 = Cb(1);
+        N2 = Cb(2);
+        s = sum(data(N1:N2, :));
         %WARNING: Using phase generated from PMT #1!!!.
         if N1 <= 16 && N2 <= 16
             [T, B] = getTopBot(s, sq1, 1/Fs, Fc/2);
@@ -59,20 +59,20 @@ for i=1:Nv
             %use the square wave for PMT1 (hopefully they're the same).
             [T, B] = getTopBot(s, sq1, 1/Fs, Fc/2);
             display('Beware! Using phase from PMT1 for channel sum across PMT1 & PMT 2')
-            D = T - B
-            diffs(i) = mean(D)
+            D = T - B;
+            diffs(i) = mean(D);
     else
         cs = size(chans);
         cs = cs(1);
         for j=1:cs
-            s = s + data(chans(j), :)
+            s = s + data(chans(j), :);
         end
         if chans(1) <= 16
             [T, B] = getTopBot(s, sq1, 1/Fs, Fc/2);
         else
             [T, B] = getTopBot(s, sq2, 1/Fs, Fc/2);
-        D = T - B
-        diffs(i) = mean(D)
+        D = T - B;
+        diffs(i) = mean(D);
 end
 return diffs
 
