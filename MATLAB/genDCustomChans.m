@@ -39,8 +39,8 @@ if size(p2,2) > 1
 end
 sq1 = square(p1 + base_phase);
 sq2 = square(p2 + base_phase);
-display(sprint('Phase 1 = %f', p1));
-display(sprint('Phase 2 = %f', p2));
+display(sprintf('Phase 1 = %f', p1));
+display(sprintf('Phase 2 = %f', p2));
 
 diffs = zeros(Nv, 1);
 
