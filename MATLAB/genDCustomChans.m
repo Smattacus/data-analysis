@@ -36,7 +36,7 @@ sq2 = square(p2 + base_phase);
 display(sprint('Phase 1 = %f', p1));
 display(sprint('Phase 2 = %f', p2));
 
-diffs = zeros(Nv, 1)
+diffs = zeros(Nv, 1);
 
 %Iterate through each entry of varargin.
 for i=1:Nv
