@@ -61,6 +61,7 @@ for i=1:Nv
             display('Beware! Using phase from PMT1 for channel sum across PMT1 & PMT 2')
             D = T - B;
             diffs(i) = mean(D);
+        end
     else
         cs = size(chans);
         cs = cs(1);
