@@ -90,6 +90,13 @@ def genTPBoxFindPhase(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0, ch1os =
                     figure for verification of correct value.
                 NB: ch1os and ch2os default to 1, which means there is 1 sample of
                 rising LIF signal before the max is hit.
+        OUTPUTS:
+        if chan == 0:
+            returns ([T1, B1], [T2, B2])
+        if chan == 1:
+            returns (T1, B1)
+        if chan == 2:
+            returns (T2, B2)
     '''
     (p1, p2) = findMaxPhaseViaSum(fn, Ta, Fs, Fc, plots, chan=chan, ch1os =
             ch1os, ch2os = ch2os) 
@@ -147,6 +154,11 @@ def genTPBoxFindPhaseOld(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0):
         (T2, B2) = getTopBot(s2, sq2, 1/Fs, Fc/2, p2, duty)
         return (T2, B2)
     return 
+
+def genTBChanPickPhase(filename, Ta, Fs, Fc, p1, p2, chans, plots=False, duty=0.5)
+    ''''
+    Generates a tuple of TOPS and BOTS corresponding 
+    '''
 
 def genTBChanSum(filename, Ta, Fs, Fc, plots=False, duty=0.6, s1range=(0,16),
         s2range=(16,32), ch1os=1, ch2os=1):
@@ -212,11 +224,26 @@ INPUTS:
     d = np.array(h5py.File(filename, 'r')['PMT_DATA_8BIT'])
     s1 = np.sum(d[:,0:16], 1)
     s2 = np.sum(d[:,16:], 1)
-    phases = np.linspace(0, 2 * np.pi * Fc * Ta, Ta * Fs, endpoint=False)
     #No endpoint; else the spacing is all wonky.
-    p = np.linspace(2 * np.pi / 100, 2 * np.pi, 100, endpoint=True)
+    #phases = np.linspace(0, 2 * np.pi * Fc * Ta, Ta * Fs, endpoint=False)
+    phases = genBasePhase(Ta, Fs, Fc)
+    #101 points makes the ends both include zero.
+    p = np.linspace(0, 2 * np.pi, 101, endpoint=True)
     PMT1 = [np.sum((sig.square(phases + x, duty) + 1) * s1) / 2 for x in p]
     PMT2 = [np.sum((sig.square(phases + x, duty) + 1) * s2) / 2 for x in p]
+    if plots == True:
+        pyplot.figure(1)
+        pyplot.clf()
+        pyplot.plot(p, PMT1, '-*')
+        pyplot.xlabel('Phase offset')
+        pyplot.ylabel('Sq wave xc')
+        pyplot.title('PMT1 Square wave correlation')
+        pyplot.figure(2)
+        pyplot.clf()
+        pyplot.plot(p, PMT2, '-*')
+        pyplot.xlabel('Phase offset')
+        pyplot.ylabel('Sq wave xc')
+        pyplot.title('PMT2 Square Wave Correlation')
     im1 = np.where(PMT1 == np.max(PMT1))
     phase1 = p[im1]
     im2 = np.where(PMT2 == np.max(PMT2))
@@ -420,3 +447,15 @@ def xcorru(x, y):
     xc = np.correlate(x, y, mode='full')
     xc = xc / np.append(np.linspace(1, N, N), np.linspace(N-1, 1, N-1))
     return xc
+
+def genBasePhase(Ta, Fs, Fc):
+    '''
+    Routine which generates a base phase array by stacking individual arrays 
+    generated with linspace that span some number of points from 0 to 2pi.
+    '''
+    Ntot = Ta * Fs
+    Nperiods = int(Fc * Ta)
+    single = np.linspace(0, 2 * np.pi, Fs / Fc, endpoint=False)
+    return np.hstack([single.T for i in range(Nperiods)])
+
+    
