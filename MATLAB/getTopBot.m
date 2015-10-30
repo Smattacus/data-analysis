@@ -21,6 +21,10 @@ function [TOP, BOT] = getTopBot(sums, squares, dt, nyq)
     gb(cut) = 0;
     [t, su_c] = ispec(gu, f);
     [t, sb_c] = ispec(gb, f);
-    TOP = resample(su_c, nyq * 2, 1 / dt);
-    BOT = resample(sb_c, nyq * 2, 1 / dt);
+    p = str2double(rat(nyq * 2))
+    q = str2double(rat(1 / dt))
+    [P, Q] = rat(p / q)
+    sprintf('p = %f, q = %f', p, q)
+    TOP = resample(su_c, P, Q);
+    BOT = resample(sb_c, P, Q);
 end
