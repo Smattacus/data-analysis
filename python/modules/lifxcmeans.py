@@ -459,3 +459,5 @@ def genBasePhase(Ta, Fs, Fc):
     return np.hstack([single.T for i in range(Nperiods)])
 
     
+
+
