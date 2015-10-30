@@ -43,11 +43,6 @@ def uxcorr(x1, x2, *args):
     xc = xc / (N - np.abs(np.linspace(-(N-1), N-1, 2 * N - 1)))
     return xc
 
-def uxcorr_ndim(x1, x2):
-    '''
-    Cross correlates the last dimension of the x1 and x2 arrays.
-    '''
-
 def averagexcorrs(navg, bg1, bg2, flucf, fluca1, fluca2, t):
     '''
         Performs an average of <navg> cross correlations between mean -
