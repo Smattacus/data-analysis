@@ -39,7 +39,7 @@ def getDiodePoints():
 #From the dye handconvolve fits
 def getRels():
     '''
-    Returns the shifts relative to the first day of data's fitted gaussian.
+    Returns the shifts relative to the first day of data's fitted Gaussian.
     This is on a daily basis - check the fitting file
     /home/sean/data/SeanRunOne/Programs/dye_handconvolves.ipynb
     '''
@@ -203,6 +203,52 @@ def getDataDirs():
     '/home/sean/data/SeanRunOne/XCMeans/04-27-15/Diode_P10Step']
     return dirlist
 
+def getDataFileList():
+    '''
+    Returns a 441 element ordered list of all the data files. This is ordered
+    according to Diode then Dye values, [-10, 10], [-10,10] 5nm wavelength
+    steps.
+    '''
+    ddirs = getDataDirs()
+    orf = []
+    for x in range(21):
+        fl = glob.glob(ddirs[x] + '/Dye_*.mat')
+        fl.sort()
+        orf = orf + fl
+    return orf
+
+def getWavelengthPairs():
+    '''
+        Returns a 441 element ordered list of all wavelength pairs. This is
+        ordered according to Diode then Dye values [-10, 10], [-10, 10]. 5nm
+        wavelength steps. The wavelengths are unshifted.
+    '''
+    diwl = getDiodePoints()
+    dydirs = getDataDirs()
+    dyewls = []
+    for x in range(21):
+        fl = glob.glob(dydirs[x] + '/Dye_*.mat')
+        fl.sort()
+        dyewls = dyewls + [float(y.split('_')[-1].split('.')[0].replace('p','.')) for y in fl]
+    dilong = np.array([np.ones((21,1)) * x for x in diwl]).reshape(441)
+    wlp = np.array([[x[0], x[1]] for x in zip(dilong, dyewls)])
+    #switch the order
+    wlp = wlp[:][:,::-1]
+    return wlp
+
+def getShiftedWavelengthPairs():
+    '''
+        Returns a 441 element ordered list of the wavelength pairs with
+        handconvolve shifting (as given by getShiftIndices().
+    '''
+    #Both of these functions return shifted values.
+    diwl = getDiodeWavelengths()
+    dywl = getDyeWavelengths().reshape(441)
+    dil = np.array([np.ones((21,)) * x for x in diwl]).reshape(441)
+    wlps = np.array([[x[0], x[1]] for x in zip(dywl, dil)])
+    return wlps
+
+
 def getShiftIndices():
     '''
     Indexing to map the shifts to a 21 element long array corresponding to each
@@ -229,12 +275,10 @@ def getDiodeWavelengths():
 
 def getDyeNoShifts(): 
     '''
-    Obtains and returns the wavelengths of the Dye measurements. These
-    wavelengths are shifted by the amounts in getRels() automatically.
+    Obtains and returns the wavelengths of the Dye measurements from the data
+    files. 
     '''
     dl = getDataDirs()
-    shift_indices = getShiftIndices()
-    shifts = getRels()[shift_indices]
     dye_wls = []
     for x in dl:
         temp = glob.glob(x + '/Dye_*.mat')
@@ -247,7 +291,8 @@ def getDyeNoShifts():
 
 def getDyeWavelengths():
     '''
-    Obtains and returns the unshifted Dye wavelength values.
+    Obtains and returns the Dye wavelength values. Shifted by the values in
+    getRels() from hand convolutions.
     '''
     dyes = getDyeNoShifts()
     si = getShiftIndices()
