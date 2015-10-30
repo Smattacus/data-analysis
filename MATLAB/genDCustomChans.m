@@ -15,6 +15,10 @@ function LIFS = genDCustomChans(fname, Ta, Fs, Fc, varargin)
 %   LIFS    :   Array of average LIF photon rate per demodulated sample (per
 %   chop period)
 %
+%Valid inputs for varargin:
+%'1-8'      :   (string) Sums all channels from 1 to 8.
+%[1, 7, 8, 4, 3] :  Sums channels 1, 7, 8, 4, 3
+%5          :   Does just channel 5.
 
 %Number of variable inputs
 Nv = nargin - 4;
@@ -48,6 +52,7 @@ diffs = zeros(Nv, 1);
 for i=1:Nv
     chans = varargin{i};
     s = zeros(1,size(data,2));
+    %IF it's a string, do the PMT range.
     if ischar(chans)
         %Assumed to be of form 'N1-N2'
         %e.g. 8-15
@@ -68,6 +73,7 @@ for i=1:Nv
         end
     D = T - B;
     diffs(i) = mean(D);
+    %Not a string, which means it's a number or an array. Proceed accordingly.
     else
         cs = size(chans);
         cs = cs(1);
