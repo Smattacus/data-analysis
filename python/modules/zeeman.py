@@ -10,6 +10,7 @@ from numpy import linspace
 import clean
 import scipy as sp
 import spec
+from scipy.spatial import distance as dist
 
 #NOTE this value is for adjusting the windowing in the functions
 #ZeemanFitFunc_VaryB and ZeemanFitFunc_VaryV. Adjust in python environment if
@@ -742,3 +743,52 @@ def find_nearest(array,value):
     idx = (np.abs(array-value)).argmin()
     return array[idx]
 
+def doppv(wl, wl0):
+    '''
+        Given two wavelengths, one of which is a Doppler shift of the other,
+        returns the velocity corresponding to the emitting source.
+        INPUTS:
+        wl      :       Wavelength that is measured of the process.
+        wl0     :       Original wavelength of the process at rest.
+    '''
+    return (c_cgs * wl / wl0 - c_cgs)
+
+def get_xy_distlimit(x, y, d):
+    '''
+        Given a set of points given by x and y, this function finds all the
+        points with a certain distance of the line defined by x=y and returns
+        the indices of them.
+        INPUTS:
+            x   :   Array of x values of points.
+            y   :   Array of y values of points.
+            d   :   Maximum distance point may be from x = y to be included.
+        
+    '''
+    #Generate the x = y array.
+    if np.max(x) > np.max(y):
+        t = np.max(x) 
+    else:
+        t = np.max(y)
+    if np.min(x) < np.min(y):
+        b = np.min(x) 
+    else: 
+        b = np.min(y)
+    v = np.linspace(b, t, 5000)
+    v = np.array([v, v]).T
+    #Generate the distances
+    points = []
+    indices = []
+    cp = np.array(zip(x,y))
+    alld = dist.cdist(v, cp, 'euclidean')
+    for x in range(alld.shape[0]):
+        i = np.where(np.abs(alld[x]) <= d)
+        for y in cp[i]:
+            if tuple(y) not in points:
+                points = points + [tuple(y)]
+        for y in i[0]:
+            if y not in indices:
+                indices = indices + [y]
+    return (points, indices)
+        
+    
+    
