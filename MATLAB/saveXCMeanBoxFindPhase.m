@@ -1,4 +1,4 @@
-function saveXCMeanBoxFindPhase(path, savename, sq_freq, acq_freq)
+function saveXCMeanBoxFindPhase(path, savename, sq_freq, acq_freq, varargin)
 %This function generates and saves the averaged cross laser correlation
 %function for a given folder.
 %
@@ -13,11 +13,18 @@ function saveXCMeanBoxFindPhase(path, savename, sq_freq, acq_freq)
 %                   savename.mat
 % sq_freq       - Frequency of laser chop
 % acq_freq      - Frequency of acquisition
+%start          - Location to eliminate data.
 %
 cd(path);
 %[T1, B1, T2, B2] = genAllTB(path, info_file, parallel, nworkers);
 %For now, use defaults:
-[T1, B1, T2, B2] = genAllTPBoxFindPhase(path, sq_freq, acq_freq);
+nvargs = length(varargin)
+if nvargs == 0
+    [T1, B1, T2, B2] = genAllTPBoxFindPhase(path, sq_freq, acq_freq);
+else
+    [T1, B1, T2, B2] = genAllTPBoxFindPhase(path, sq_freq, acq_freq, varargin{1});
+end
+
 list_data = dir(sprintf('%s/*.h5', path));
 D1 = (T1 - B1) * 2;
 D2 = (T2 - B2) * 2;
