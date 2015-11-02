@@ -67,9 +67,9 @@ for i=1:size(list,1)
     display(p1);
     display(p2);
     data = h5read(fn, '/PMT_DATA_8BIT');
-    s1 = sum(data(1:16, start:)); 
+    s1 = sum(data(1:16, start:end)); 
 %    s1 = s1 - mean(s1);
-    s2 = sum(data(17:32,start:)); 
+    s2 = sum(data(17:32,start:end)); 
 %    s2 = s2 - mean(s2);
     [T1, B1] = getTopBot(s1, square1, 1/Fa, Fc/2);
     [T2, B2] = getTopBot(s2, square2, 1/Fa, Fc/2);
