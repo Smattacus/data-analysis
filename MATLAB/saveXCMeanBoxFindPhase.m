@@ -19,10 +19,14 @@ cd(path);
 %[T1, B1, T2, B2] = genAllTB(path, info_file, parallel, nworkers);
 %For now, use defaults:
 nvargs = length(varargin)
-if nvargs == 0
-    [T1, B1, T2, B2] = genAllTPBoxFindPhase(path, sq_freq, acq_freq);
-else
-    [T1, B1, T2, B2] = genAllTPBoxFindPhase(path, sq_freq, acq_freq, varargin{1});
+[T1, B1, T2, B2] = genAllTPBoxFindPhase(path, sq_freq, acq_freq);
+
+if nvargs == 1
+    start = varargin{1};
+    T1 = T1(:, start:end);
+    T2 = T2(:, start:end);
+    B1 = B1(:, start:end);
+    B2 = B2(:, start:end);
 end
 
 list_data = dir(sprintf('%s/*.h5', path));

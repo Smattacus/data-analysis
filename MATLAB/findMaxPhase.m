@@ -1,4 +1,4 @@
-function [phase1, phase2] = findMaxPhase(filename, Ta, Fs, Fc, plots, varargin)
+function [phase1, phase2] = findMaxPhase(filename, Ta, Fs, Fc, plots)
 %Function which calculates and plots the maximum phase for the square wave.
 %This assumes that you are using the synchronization box, and generates a
 %square wave programmatically rather than using inverse transforms.
@@ -18,14 +18,8 @@ function [phase1, phase2] = findMaxPhase(filename, Ta, Fs, Fc, plots, varargin)
 %                   points)
 %
 d = h5read(filename, '/PMT_DATA_8BIT');
-nvargs = length(varargin)
-if nvargs == 1
-    start = varargin{1};
-else
-    start = 1;
-end
-s1 = sum(d(7:9,start:end));
-s2 = sum(d(23:24,start:end));
+s1 = sum(d(7:9,:));
+s2 = sum(d(23:24,:));
 phases = genBasePhase(Ta);
 phases = phases(start:end);
 p = linspace(0, 2 * pi - 2 * pi / 100 , 100);

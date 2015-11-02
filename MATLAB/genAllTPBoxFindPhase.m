@@ -1,4 +1,4 @@
-function [TOP1, BOT1, TOP2, BOT2] = genAllTPBoxFindPhase(path, Fc, Fa, varargin)
+function [TOP1, BOT1, TOP2, BOT2] = genAllTPBoxFindPhase(path, Fc, Fa)
 %Function to generate ALL the downsampled TOP and BOT arrays of LIF + Noise
 %and noise data. 
 %
@@ -30,27 +30,19 @@ nfiles = size(list,1);
 temp = h5read(list(1).name, '/PMT_DATA_8BIT');
 N = size(temp,2);
 
-nvarargs = length(varargin);
-if nvarargs < 1
-    start = 1;
-    total_t = N / Fa;
-elseif nvarargs == 1
-    start = varargin{1};
-    total_t = (N - (start - 1)) / Fa;
-else 
-    display('Incorrect number of arguments in genAllTPBoxFindPhase_Cut')
-end
+total_t = (N) / Fa;
 
 base_phase = genBasePhase(total_t);
+npoints = N * Fc / Fa;
 
-TOP1 = zeros(nfiles, N * Fc / Fa);
-BOT1 = zeros(nfiles, N * Fc / Fa);
-TOP2 = zeros(nfiles, N * Fc / Fa);
-BOT2 = zeros(nfiles, N * Fc / Fa);
+TOP1 = zeros(nfiles, npoints);
+BOT1 = zeros(nfiles, npoints);
+TOP2 = zeros(nfiles, npoints);
+BOT2 = zeros(nfiles, npoints);
 
 for i=1:size(list,1)
     fn = list(i).name;
-    [p1, p2] = findMaxPhase(fn, total_t, Fa, Fc, true, start);
+    [p1, p2] = findMaxPhase(fn, total_t, Fa, Fc, true);
     if size(p1,1) > 1 || size(p1,2) > 1
         %This should only happen if p1 or p2 is = 0.
         display(sprintf('Phase longer than one element for file = %s, Ch1.', fn));
@@ -63,14 +55,12 @@ for i=1:size(list,1)
         display('Taking first element of phase 2 array');
         p2 = p2(1);
     end
-    square1 = square(p1 + base_phase);
-    square2 = square(p2 + base_phase);
+    sq1 = square(p1 + base_phase);
+    sq2 = square(p2 + base_phase);
     display(p1);
     display(p2);
     data = h5read(fn, '/PMT_DATA_8BIT');
-    s1 = sum(data(1:16, start:end)); 
-    sq1 = square1(start:end)
-    sq2 = square2(start:end)
+    s1 = sum(data(1:16, :)); 
 %    s1 = s1 - mean(s1);
     s2 = sum(data(17:32,start:end)); 
 %    s2 = s2 - mean(s2);
