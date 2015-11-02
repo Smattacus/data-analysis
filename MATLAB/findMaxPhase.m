@@ -21,7 +21,6 @@ d = h5read(filename, '/PMT_DATA_8BIT');
 s1 = sum(d(7:9,:));
 s2 = sum(d(23:24,:));
 phases = genBasePhase(Ta);
-phases = phases(start:end);
 p = linspace(0, 2 * pi - 2 * pi / 100 , 100);
 PMT1 = zeros(1, 100);
 PMT2 = zeros(1, 100);
