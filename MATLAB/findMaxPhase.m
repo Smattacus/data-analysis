@@ -19,7 +19,7 @@ function [phase1, phase2] = findMaxPhase(filename, Ta, Fs, Fc, plots, varargin)
 %
 d = h5read(filename, '/PMT_DATA_8BIT');
 nvargs = length(varargin)
-if nvargs == 1:
+if nvargs == 1
     start = varargin{1};
 else
     start = 1;
