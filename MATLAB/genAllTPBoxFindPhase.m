@@ -47,12 +47,14 @@ for i=1:size(list,1)
         %This should only happen if p1 or p2 is = 0.
         display(sprintf('Phase longer than one element for file = %s, Ch1.', fn));
         display('Taking first element of phase 1 array');
+        p1
         p1 = p1(1);
     end
     if size(p2,1) > 1 || size(p2,2) > 1
         %This should only happen if p1 or p2 is = 0.
         display(sprintf('Phase longer than one element for file = %s, Ch1.', fn));
         display('Taking first element of phase 2 array');
+        p2
         p2 = p2(1);
     end
     sq1 = square(p1 + base_phase);
