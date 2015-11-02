@@ -36,7 +36,7 @@ base_phase = genBasePhase(total_t);
 nvarargs = length(varargin);
 if nvarargs < 1
     start = 0;
-else nvarargs == 1
+elseif nvarargs == 1
     start = varargin{1};
 else 
     display('Incorrect number of arguments in genAllTPBoxFindPhase_Cut')
