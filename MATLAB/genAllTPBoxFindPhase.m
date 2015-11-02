@@ -1,4 +1,4 @@
-function [TOP1, BOT1, TOP2, BOT2] = genAllTPBoxFindPhase(path, Fc, Fa)
+function [TOP1, BOT1, TOP2, BOT2] = genAllTPBoxFindPhase(path, Fc, Fa, varargin)
 %Function to generate ALL the downsampled TOP and BOT arrays of LIF + Noise
 %and noise data. 
 %
@@ -33,6 +33,15 @@ total_t = N / Fa;
 
 base_phase = genBasePhase(total_t);
 
+nvarargs = length(varargin);
+if nvarargs < 1
+    start = 0;
+else nvarargs == 1
+    start = varargin{1};
+else 
+    display('Incorrect number of arguments in genAllTPBoxFindPhase_Cut')
+end
+
 TOP1 = zeros(nfiles, N * Fc / Fa);
 BOT1 = zeros(nfiles, N * Fc / Fa);
 TOP2 = zeros(nfiles, N * Fc / Fa);
@@ -58,9 +67,9 @@ for i=1:size(list,1)
     display(p1);
     display(p2);
     data = h5read(fn, '/PMT_DATA_8BIT');
-    s1 = sum(data(1:16, :)); 
+    s1 = sum(data(1:16, start:)); 
 %    s1 = s1 - mean(s1);
-    s2 = sum(data(17:32,:)); 
+    s2 = sum(data(17:32,start:)); 
 %    s2 = s2 - mean(s2);
     [T1, B1] = getTopBot(s1, square1, 1/Fa, Fc/2);
     [T2, B2] = getTopBot(s2, square2, 1/Fa, Fc/2);
