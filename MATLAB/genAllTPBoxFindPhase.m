@@ -26,6 +26,10 @@ function [TOP1, BOT1, TOP2, BOT2] = genAllTPBoxFindPhase(path, Fc, Fa, varargin)
 cd(path);
 list = dir('*.h5');
 
+nfiles = size(list,1);
+temp = h5read(list(1).name, '/PMT_DATA_8BIT');
+N = size(temp,2);
+
 nvarargs = length(varargin);
 if nvarargs < 1
     start = 1;
@@ -36,10 +40,6 @@ elseif nvarargs == 1
 else 
     display('Incorrect number of arguments in genAllTPBoxFindPhase_Cut')
 end
-
-nfiles = size(list,1);
-temp = h5read(list(1).name, '/PMT_DATA_8BIT');
-N = size(temp,2);
 
 base_phase = genBasePhase(total_t);
 
