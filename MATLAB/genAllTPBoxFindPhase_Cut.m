@@ -1,12 +1,12 @@
 function [TOP1, BOT1, TOP2, BOT2] = genAllTPBoxFindPhase_Cut(path, Fc, Fa,
-start=300000)
+varargin)
 %Function to generate ALL the downsampled TOP and BOT arrays of LIF + Noise
 %and noise data. 
 %
 %This one is different in that it drops the first 300k elements. We're
 %going to see if this helps to remove the transient behavior.
 %
-%[TOP1, BOT1, TOP2, BOT2] = genAllTPBoxFindPhase(path, Fc, Fa)
+%[TOP1, BOT1, TOP2, BOT2] = genAllTPBoxFindPhase(path, Fc, Fa, start)
 %
 %This function assumes that the same phase is to be used across all files
 %in the directory pointed to by path. It generates a straight square wave
@@ -21,6 +21,7 @@ start=300000)
 %   Fc - Frequency of the square wave function. Generally, this is the
 %            laser chop frequency
 %   Fa   - Acquisition frequency.
+%   start   -   (OPTIONAL) Specifies the index to start at for the data arrays.
 %
 %OUTPUTS:
 %   TOP1 - NxM array of LIF +plasma data. N = number of files, M = # of points, PMT 1.
@@ -34,6 +35,14 @@ nfiles = size(list,1);
 temp = h5read(list(1).name, '/PMT_DATA_8BIT');
 N = size(temp,2);
 total_t = N / Fa;
+
+if nVarargs < 1
+    start = 300000
+else nVarargs == 1
+    start = varargin{1}
+else 
+    display('Incorrect number of arguments in genAllTPBoxFindPhase_Cut')
+end
 
 base_phase = genBasePhase(total_t);
 
