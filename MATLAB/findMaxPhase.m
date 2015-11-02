@@ -14,6 +14,8 @@ function [phase1, phase2] = findMaxPhase(filename, Ta, Fs, Fc, plots, varargin)
 %   Fs          - Sampling frequency
 %   Fc          - Chop frequency
 %   plots       - Boolean to display plots
+%   start       - (OPTIONAL) Start point for the array (to cut off strange
+%                   points)
 %
 d = h5read(filename, '/PMT_DATA_8BIT');
 nvargs = length(varargin)
