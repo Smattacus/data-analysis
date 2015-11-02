@@ -24,8 +24,8 @@ if nvargs == 1
 else
     start = 1;
 end
-s1 = sum(d(7:9,start:end))
-s2 = sum(d(23:24,start:end))
+s1 = sum(d(7:9,start:end));
+s2 = sum(d(23:24,start:end));
 phases = genBasePhase(Ta);
 phases = phases(start:end);
 p = linspace(0, 2 * pi - 2 * pi / 100 , 100);
