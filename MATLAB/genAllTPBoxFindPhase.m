@@ -36,7 +36,7 @@ if nvarargs < 1
     total_t = N / Fa;
 elseif nvarargs == 1
     start = varargin{1};
-    total_t = (N - (start - 1)) / Fa
+    total_t = (N - (start - 1)) / Fa;
 else 
     display('Incorrect number of arguments in genAllTPBoxFindPhase_Cut')
 end
@@ -50,7 +50,7 @@ BOT2 = zeros(nfiles, N * Fc / Fa);
 
 for i=1:size(list,1)
     fn = list(i).name;
-    [p1, p2] = findMaxPhase(fn, total_t, Fa, Fc, true);
+    [p1, p2] = findMaxPhase(fn, total_t, Fa, Fc, true, start);
     if size(p1,1) > 1 || size(p1,2) > 1
         %This should only happen if p1 or p2 is = 0.
         display(sprintf('Phase longer than one element for file = %s, Ch1.', fn));
