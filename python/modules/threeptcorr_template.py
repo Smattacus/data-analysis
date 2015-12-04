@@ -25,7 +25,7 @@ import os
 import string
 import glob
 
-import threeptcorr_helpers as tpc 
+import tpcorr as tpc 
 
 ####################################
 #
