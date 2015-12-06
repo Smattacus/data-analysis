@@ -40,6 +40,7 @@ def uxcorr(x1, x2, *args):
     #Reverse the last axis' ordering.
     xc = sig.fftconvolve(x1, x2[Ellipsis, ::-1], *args)
     N = (xc.shape[-1] + 1) / 2
+    #Unbiased calculation.
     xc = xc / (N - np.abs(np.linspace(-(N-1), N-1, 2 * N - 1)))
     return xc
 
@@ -130,6 +131,29 @@ def axc_ndarr(navg, dims, bgs, flucfs1, flucfs2, flucas1, flucas2, t):
     return (uxc12, PMT1, PMT2)
 
 def uxcorr_ndim(x1, x2, axis=-1):
+    '''
+    Helper routine for taking the cross correlation of a LOT of arrays using
+    numpy's apply_along_axis routine.
+
+    INPUTS:
+        x1      :       N x M array of separate time series data.
+        x2      :       N x M array of separate time series data.
+        axis=-1 :       Select which axis to perform xcorrs along.
+    OUTPUTS:
+        xcfull  :       2D array of cross correlations.
+
+    For example, if I have two 2D arrays of 50 cross correlations, which are
+    t1s.shape = (50,800000) and t2s.shape = (50, 800000), then 
+
+    xc = uxcorr_ndim(t1s, t2s, axis=0)
+
+    will give me xc.shape = (50, 1599999)
+
+    Thus, the result is 50 separate cross correlations between the
+    corresponding time series data of x1 and x2 and is readily pointwise
+    averaged using xcm = np.mean(xc, axis=0).
+
+    '''
     p12j = np.concatenate((x1, x2), axis=axis)
     return np.apply_along_axis(uxcorr_axis, axis, p12j)
     
@@ -139,8 +163,5 @@ def uxcorr_axis(arr):
     '''
     x1 = arr[0:arr.shape[0] / 2]
     x2 = arr[arr.shape[0]/2:]
-    print(x1)
-    print(x2)
-    print(uxcorr(x1,x2))
     return uxcorr(x1, x2)
 
