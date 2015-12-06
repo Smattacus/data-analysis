@@ -180,27 +180,28 @@ def getDataDirs():
     Returns the directories which have .mat data files - corresponding to each
     Dye measurement. (Each folder corresponds to one Diode setting.)
     '''
-    dirlist = [ '/home/sean/data/SeanRunOne/XCMeans/04-28-15/Diode_N10Step',
-    '/home/sean/data/SeanRunOne/XCMeans/04-23-15/Diode_N9Step',
-    '/home/sean/data/SeanRunOne/XCMeans/04-23-15/Diode_N8Step',
-    '/home/sean/data/SeanRunOne/XCMeans/04-17-15/Diode_N7Step',
-    '/home/sean/data/SeanRunOne/XCMeans/04-17-15/Diode_N6Step',
-    '/home/sean/data/SeanRunOne/XCMeans/04-14-15/Diode_N5Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-10-15/Diode_N4Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-10-15/Diode_N3Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-08-15/Diode_N2Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-06-15/Diode_N1Step',
-    '/home/sean/data/SeanRunOne/XCMeans/04-03-15', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-07-15/Diode_P1Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-07-15/Diode_P2Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-09-15/Diode_P3Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-13-15/Diode_P4Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-14-15/Diode_P5Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-15-15/Diode_P6Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-21-15/Diode_P7Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-22-15/Diode_P8Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-24-15/Diode_P9Step', 
-    '/home/sean/data/SeanRunOne/XCMeans/04-27-15/Diode_P10Step']
+    dirlist = [ 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-28-15/Diode_N10Step',
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-23-15/Diode_N9Step',
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-23-15/Diode_N8Step',
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-17-15/Diode_N7Step',
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-17-15/Diode_N6Step',
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-14-15/Diode_N5Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-10-15/Diode_N4Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-10-15/Diode_N3Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-08-15/Diode_N2Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-06-15/Diode_N1Step',
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-03-15/Diode_P0Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-07-15/Diode_P1Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-07-15/Diode_P2Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-09-15/Diode_P3Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-13-15/Diode_P4Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-14-15/Diode_P5Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-15-15/Diode_P6Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-21-15/Diode_P7Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-22-15/Diode_P8Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-24-15/Diode_P9Step', 
+    '/home/sean/data/SeanRunOne/XCMeans/Cuts/04-27-15/Diode_P10Step']
     return dirlist
 
 def getDataFileList():
