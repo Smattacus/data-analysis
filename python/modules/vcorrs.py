@@ -81,8 +81,10 @@ class cls_vcorrset:
             INPUTS:
             filename    :   (string) .npy file to load using np.load().
         '''
-        fn = ('obj_' + prefix + '_Diode_P%dStep.npz' % self.diode_step if self.diode_step >= 0 else
-        'obj_' + prefix + '_Diode_N%dStep.npz' % abs(self.diode_step))
+        fn = ('obj_' + prefix + 'Diode_P%dStep.npz' % self.diode_step if self.diode_step >= 0 else
+        'obj_' + prefix + 'Diode_N%dStep.npz' % abs(self.diode_step))
+        if prefix == '':
+            fn = fn.replace('obj__', 'obj_')
         read = np.load(fn)
         self.xcorrs = read['arr_0']
         self.lif_avgs1 = read['arr_1']
