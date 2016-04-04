@@ -155,10 +155,10 @@ def genTPBoxFindPhaseOld(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0):
         return (T2, B2)
     return 
 
-def genTBChanPickPhase(filename, Ta, Fs, Fc, p1, p2, chans, plots=False, duty=0.5)
-    ''''
-    Generates a tuple of TOPS and BOTS corresponding 
-    '''
+#def genTBChanPickPhase(filename, Ta, Fs, Fc, p1, p2, chans, plots=False, duty=0.5)
+#    ''''
+#    Generates a tuple of TOPS and BOTS corresponding 
+#    '''
 
 def genTBChanSum(filename, Ta, Fs, Fc, plots=False, duty=0.6, s1range=(0,16),
         s2range=(16,32), ch1os=1, ch2os=1):
@@ -439,14 +439,6 @@ def plotHists(flist, Ta, Fs, Fc, target = '', chan=0):
         pyplot.title('Plot for ' + fo)
         pyplot.savefig(fo)
 
-def xcorru(x, y):
-    '''
-    Takes an unbiased cross correlation.
-    '''
-    N = len(x)
-    xc = np.correlate(x, y, mode='full')
-    xc = xc / np.append(np.linspace(1, N, N), np.linspace(N-1, 1, N-1))
-    return xc
 
 def genBasePhase(Ta, Fs, Fc):
     '''
