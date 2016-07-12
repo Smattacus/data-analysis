@@ -145,7 +145,7 @@ def genTPBoxFindPhaseOld(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0):
     s2 = np.sum(d[:,16:],1)
     if chan == 0:
         (T1, B1) = getTopBot(s1, sq1, 1 / Fs, Fc / 2, p1, duty)
-        (T2, B2) = geetTopBot(s2, sq2, 1/Fs, Fc / 2, p2, duty)
+        (T2, B2) = getTopBot(s2, sq2, 1/Fs, Fc / 2, p2, duty)
         return ([T1, B1], [T2, B2])
     if chan == 1:
         (T1, B1) = getTopBot(s1, sq1, 1/ Fs, Fc/2, p1, duty)
@@ -253,6 +253,29 @@ INPUTS:
     if len(phase2) > 1:
         phase2 = phase2[0]
     return (phase1, phase2)
+
+
+#TODO: Remake findMaxPhase with good array manipulation methods.
+def findMaxPhaseTemp(filename, Ta, Fs, Fc, plots=False,
+                     plotname='temp.png',chan=0,ch1os=1,ch2os=1):
+    '''
+    Temporary findMaxPhase in order to test out a method that uses array
+    operations to speed it up. The nested list comprehension for the differenet
+    phases is killing me, timewise.
+
+    :param filename:
+    :param Ta:
+    :param Fs:
+    :param Fc:
+    :param plots:
+    :param plotname:
+    :param chan:
+    :param ch1os:
+    :param ch2os:
+    :return:
+    '''
+    phases = genBasePhase(Ta, Fs, Fc)
+
 
 def findMaxPhaseViaSum(filename, Ta, Fs, Fc, plots=False,
 plotname='temp.png', chan=0, ch1os=1, ch2os=1):
@@ -381,8 +404,8 @@ def sumDataToTen(d1, d2, Ta, Fs, Fc):
     INPUTS:
         d1  :   
     '''
-    s1rs = np.mean(d1.reshape(Ta * Fc, Fs / Fc), 0)
-    s2rs = np.mean(d2.reshape(Ta * Fc, Fs / Fc), 0)
+    s1rs = np.mean(d1.reshape((Ta * Fc, Fs / Fc)), 0)
+    s2rs = np.mean(d2.reshape((Ta * Fc, Fs / Fc)), 0)
     return (s1rs, s2rs)
 
 def sumToTen(filename, Ta, Fs, Fc):
@@ -391,7 +414,7 @@ def sumToTen(filename, Ta, Fs, Fc):
     data histogram in Fs / Fc bins.
     INPUTS:
         filename    :   Name of the file to generate histogram of.
-        Ta          :   Total acquisition time in the file.
+        Ta          :   Total acquisition time in the file. IN SECONDS.
         Fs          :   Sampling speed in Hz
         Fc          :   Laser chopping speed in Hz
     OUTPUTS
@@ -401,8 +424,9 @@ def sumToTen(filename, Ta, Fs, Fc):
     d = np.array(h5py.File(filename, 'r')['PMT_DATA_8BIT'])
     s1 = np.sum(d[:, 0:16], 1)
     s2 = np.sum(d[:,16:], 1)
-    s1rs = np.mean(s1.reshape(Ta * Fc, Fs / Fc), 0)
-    s2rs = np.mean(s2.reshape(Ta * Fc, Fs / Fc), 0)
+    #Reshape into N/10 x 10 arrays, mean along the long axis.
+    s1rs = np.mean(s1.reshape((Ta * Fc, Fs / Fc)), 0)
+    s2rs = np.mean(s2.reshape((Ta * Fc, Fs / Fc)), 0)
     return (s1rs, s2rs)
 
 def plotHists(flist, Ta, Fs, Fc, target = '', chan=0):
