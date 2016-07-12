@@ -39,3 +39,9 @@ def parseSynchData(synch_data, offset=0x8000):
     avs = np.vstack((avs1, avs2)).T
     return avs, timestamps
 
+
+#TODO: Write an interpolator function that checks the timestamps to see if a trigger
+#was missed.
+def interpolateTimeStamps():
+    return
+
