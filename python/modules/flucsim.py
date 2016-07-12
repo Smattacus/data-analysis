@@ -145,7 +145,7 @@ def uxcorr_ndim(x1, x2, axis=-1):
     For example, if I have two 2D arrays of 50 cross correlations, which are
     t1s.shape = (50,800000) and t2s.shape = (50, 800000), then 
 
-    xc = uxcorr_ndim(t1s, t2s, axis=0)
+    xc = uxcorr_ndim(t1s, t2s, axis=1)
 
     will give me xc.shape = (50, 1599999)
 
