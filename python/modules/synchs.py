@@ -36,6 +36,6 @@ def parseSynchData(synch_data, offset=0x8000):
     avs2 = synch_data[9::10]
     avs1 = (avs1.astype(float) - offset) / np.iinfo(np.uint16).max
     avs2 = (avs2.astype(float) - offset) / np.iinfo(np.uint16).max
-    avs = np.hstack((avs1, avs2))
+    avs = np.vstack((avs1, avs2)).T
     return avs, timestamps
 
