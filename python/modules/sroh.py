@@ -245,6 +245,22 @@ def getDataFileList():
         orf = orf + fl
     return orf
 
+def getDataDict():
+    '''Returns a dictionary with indices corresponding to the different Diode
+    positions. The indices are given by Diode_N10Step, Diode_N9Step, ...,
+    Diode_P0Step, ..., Diode_P9Step, Diode_P10Step.'''
+    dfl = getDataFileList()
+    dil = ['Diode_P%dStep' % x if x >= 0 else 'Diode_N%dStep' % abs(x) for x in
+            np.linspace(-10, 10, 21)]
+    ddict = {}
+    for x in dil:
+        temp = []
+        for y in dfl:
+            if x in y:
+                temp.append(y)
+        ddict[x] = temp
+    return ddict
+
 def getWavelengthPairs():
     '''
         Returns a 441 element ordered list of all wavelength pairs. This is
