@@ -337,7 +337,7 @@ plotname='temp.png', chan=0, ch1os=1, ch2os=1):
     p2 = 2 * np.pi - (s2m-ch2os) * 2 * np.pi / (Fs / Fc)
     return (p1, p2)
 
-def getTopBot(sums, squares, dt, nyq, phase, duty, osample=10):
+def getTopBot(sums, squares, dt, nyq, alt=False, phase=0, duty=0.5, osample=10):
     '''
 %[TOP, BOT] = getTopBot(sums, squares, dt, nyq)
 Function which takes the signal, aligned square wave, and time
@@ -354,48 +354,51 @@ phase       = Phase of the input square wave.
 duty        = Duty Cycle of the input square wave. Assumed to be .1 precision.
 osample     = Oversampling rate. Assumed to be 10.
 OUTPUTS:
-TOP        = Points corresponding to the downsampled laser ON
-BOT        = Poitns corresponding to the downsampled laser OFF
+top        = Points corresponding to the downsampled laser ON
+bot        = Points corresponding to the downsampled laser OFF
 '''
-#Old
-#    su = sums * (squares + 1) / 2
-#    sb = sums * (-squares + 1) / 2
-#    [f, gu] = spec.spec(su, dt)
-#    [f, gb] = spec.spec(sb, dt)
-#    cut = np.where(abs(f) > nyq)
-#    gu[cut] = 0
-#    gb[cut] = 0
-#    [t, su_c] = ispec(gu, f)
-#    [t, sb_c] = ispec(gb, f)
-#    #Do I need to put in a shift? Take a look at some data.
-#    TOP = sig.resample(su_c, len(su_c) * nyq * 2 * dt)
-#    BOT = sig.resample(sb_c, len(sb_c) * nyq * 2 * dt)
-#New
-    #Downsample the array
-    [f, g] = spec.spec(sums, dt)
-    cut = np.where(abs(f) > nyq)
-    g[cut] = 0
-    [t, sums_ds] = spec.ispec(g, f)
-    sums_ds = np.abs(sums_ds)
-    #Determine the duty cycle of the square wave.
-    # (# of differences per sq. wave cycle) * (scaling factor 
-    # for all cycles in
-    # square array) * normalization + (default duty cycle)
-    #Determine phase, in multiple of 2pi/10
-    phs = int(round(phase / ( 2 * np.pi / osample))) 
-    #Apply the square waves.
-    su = sums_ds * (squares + 1) / 2
-    sd = sums_ds * (-squares + 1) / 2
-    #Roll the incomplete cycles from the end and beginning
-    #together, then eliminate them.
-    su = np.roll(su, phs)[osample:]
-    sd = np.roll(sd, phs)[osample:]
-    on = duty * osample
-    off = (1 - duty) * osample
-    #Get rid of zerod elements and average over remaining columns
-    TOP = np.mean(su.reshape(len(su) / osample, osample)[:, 0:on], 1)
-    BOT = np.mean(sd.reshape(len(sd) / osample, osample)[:, on:],1)
-    return (TOP, BOT)
+    # Old
+    if alt==False:
+        su = sums * (squares + 1) / 2
+        sb = sums * (-squares + 1) / 2
+        [f, gu] = spec.spec(su, dt)
+        [f, gb] = spec.spec(sb, dt)
+        cut = np.where(abs(f) > nyq)
+        gu[cut] = 0
+        gb[cut] = 0
+        [t, su_c] = spec.ispec(gu, f)
+        [t, sb_c] = spec.ispec(gb, f)
+        #Do I need to put in a shift? Take a look at some data.
+        top = sig.resample(su_c, len(su_c) * nyq * 2 * dt)
+        bot = sig.resample(sb_c, len(sb_c) * nyq * 2 * dt)
+        return (top, bot)
+    #New
+    elif alt==True:
+        # Downsample the array
+        [f, g] = spec.spec(sums, dt)
+        cut = np.where(abs(f) > nyq)
+        g[cut] = 0
+        [t, sums_ds] = spec.ispec(g, f)
+        sums_ds = np.abs(sums_ds)
+        # Determine the duty cycle of the square wave.
+        # (# of differences per sq. wave cycle) * (scaling factor
+        # for all cycles in
+        # square array) * normalization + (default duty cycle)
+        # Determine phase, in multiple of 2pi/10
+        phs = int(round(phase / ( 2 * np.pi / osample)))
+        # Apply the square waves.
+        su = sums_ds * (squares + 1) / 2
+        sd = sums_ds * (-squares + 1) / 2
+        # Roll the incomplete cycles from the end and beginning
+        # together, then eliminate them.
+        su = np.roll(su, phs)[osample:]
+        sd = np.roll(sd, phs)[osample:]
+        on = duty * osample
+        off = (1 - duty) * osample
+        # Get rid of zerod elements and average over remaining columns
+        TOP = np.mean(su.reshape(len(su) / osample, osample)[:, 0:on], 1)
+        BOT = np.mean(sd.reshape(len(sd) / osample, osample)[:, on:],1)
+        return (TOP, BOT)
 
 def sumDataToTen(d1, d2, Ta, Fs, Fc):
     '''
