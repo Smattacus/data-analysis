@@ -136,7 +136,8 @@ def genTPBoxFindPhaseOld(fn, Ta, Fs, Fc, plots=False, duty = 0.6, chan=0):
                 NB: ch1os and ch2os default to 1, which means there is 1 sample of
                 rising LIF signal before the max is hit.
     '''
-    (p1, p2) = findMaxPhase(fn, Ta, Fs, Fc, plots, duty=duty) 
+    (p1, p2) = findMaxPhase(fn, Ta, Fs, Fc, plots, duty=duty)
+    print p1, p2
     d = np.array(h5py.File(fn, 'r')['PMT_DATA_8BIT'])
     phasegen = np.linspace(0, 2 * np.pi * Fc * Ta, Ta * Fs, endpoint = False)
     sq1 = sig.square(phasegen + p1, duty)
@@ -195,13 +196,13 @@ def genTBChanSum(filename, Ta, Fs, Fc, plots=False, duty=0.6, s1range=(0,16),
         if s1range[0] >= 16 and s1range[1] >= 16:
             p1 = p2
         if s2range == None:
-             (T, B) = getTopBot(s1, sq, 1 / Fs, Fc / 2, p1, duty=0.6,
+             (T, B) = getTopBot(s1, sq, 1 / Fs, Fc / 2, p1, duty,
                  osample=10) 
              return (T, B)
         sq = sig.square(p1 + phasegen, duty) 
         s2 = np.sum(d[:,s2range[0]:s2range[1]],1)
-        (T1, B1) = getTopBot(s1, sq, 1/Fs, Fc / 2, p1, duty = 0.6, osample=10)
-        (T2, B2) = getTopBot(s2, sq, 1/Fs, Fc/2, p2, duty=0.6, osample=10)
+        (T1, B1) = getTopBot(s1, sq, 1/Fs, Fc / 2, p1, duty, osample=10)
+        (T2, B2) = getTopBot(s2, sq, 1/Fs, Fc/2, p2, duty, osample=10)
         return (T1, B1, T2, B2)
 
 def findMaxPhase(filename, Ta, Fs, Fc, plots, duty=0.5):
@@ -260,7 +261,7 @@ def findMaxPhaseTemp(filename, Ta, Fs, Fc, plots=False,
                      plotname='temp.png',chan=0,ch1os=1,ch2os=1):
     '''
     Temporary findMaxPhase in order to test out a method that uses array
-    operations to speed it up. The nested list comprehension for the differenet
+    operations to speed it up. The nested list comprehension for the different
     phases is killing me, timewise.
 
     :param filename:
@@ -337,28 +338,27 @@ plotname='temp.png', chan=0, ch1os=1, ch2os=1):
     p2 = 2 * np.pi - (s2m-ch2os) * 2 * np.pi / (Fs / Fc)
     return (p1, p2)
 
-def getTopBot(sums, squares, dt, nyq, alt=False, phase=0, duty=0.5, osample=10):
+def getTopBot(sums, squares, dt, nyq, resample=True, phase=0, duty=0.5, osample=10):
     '''
-%[TOP, BOT] = getTopBot(sums, squares, dt, nyq)
-Function which takes the signal, aligned square wave, and time
-differential and generates the top and bottom arrays.
+    %[TOP, BOT] = getTopBot(sums, squares, dt, nyq)
+    Function which takes the signal, aligned square wave, and time
+    differential and generates the top and bottom arrays.
 
-(TOP, BOT) = GetTopBox(sums, squares, dt, nyq)
+    (TOP, BOT) = GetTopBox(sums, squares, dt, nyq)
 
-INPUTS:
-sums       = Array of pmt readings.
-squares    = Square wave.
-dt         = time difference between readings. 1 / f
-nyq        = Desired nyquist frequency (usually 1/2 of chop)
-phase       = Phase of the input square wave.
-duty        = Duty Cycle of the input square wave. Assumed to be .1 precision.
-osample     = Oversampling rate. Assumed to be 10.
-OUTPUTS:
-top        = Points corresponding to the downsampled laser ON
-bot        = Points corresponding to the downsampled laser OFF
-'''
-    # Old
-    if alt==False:
+    INPUTS:
+    sums       = Array of pmt readings.
+    squares    = Square wave.
+    dt         = time difference between readings. 1 / f
+    nyq        = Desired nyquist frequency (usually 1/2 of chop)
+    phase       = Phase of the input square wave.
+    duty        = Duty Cycle of the input square wave. Assumed to be .1 precision.
+    osample     = Oversampling rate. Assumed to be 10.
+    OUTPUTS:
+    top        = Points corresponding to the downsampled laser ON
+    bot        = Points corresponding to the downsampled laser OFF
+    '''
+    if resample: # Old
         su = sums * (squares + 1) / 2
         sb = sums * (-squares + 1) / 2
         [f, gu] = spec.spec(su, dt)
@@ -366,14 +366,14 @@ bot        = Points corresponding to the downsampled laser OFF
         cut = np.where(abs(f) > nyq)
         gu[cut] = 0
         gb[cut] = 0
-        [t, su_c] = spec.ispec(gu, f)
-        [t, sb_c] = spec.ispec(gb, f)
+        [t, su_c] = spec.ispec(gu, f[1] - f[0])
+        [t, sb_c] = spec.ispec(gb, f[1] - f[0])
         #Do I need to put in a shift? Take a look at some data.
         top = sig.resample(su_c, len(su_c) * nyq * 2 * dt)
         bot = sig.resample(sb_c, len(sb_c) * nyq * 2 * dt)
         return (top, bot)
     #New
-    elif alt==True:
+    else:
         # Downsample the array
         [f, g] = spec.spec(sums, dt)
         cut = np.where(abs(f) > nyq)
