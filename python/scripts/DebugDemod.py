@@ -29,7 +29,19 @@ sq2 = sig.square(phasegen + p2, 0.5)
 sq1_old = sig.square(phasegen + p1_old, 0.5)
 sq2_old = sig.square(phasegen + p2_old, 0.5)
 
-s1 = np.sum(d[:,0:16], 1)
-s2 = np.sum(d[:,16:], 1)
+s1 = np.sum(d[:, 0:16], 1)
+s2 = np.sum(d[:, 16:], 1)
 
+# Now let's start looking at the demodulated data for one file, and
+# figure out why it looks weird.
+
+TB = np.array(TB)
+T1 = TB[0, 0, :]
+B1 = TB[0, 1, :]
+T2 = TB[1, 0, :]
+B2 = TB[1, 1, :]
+
+# Try out gettopbot with the older code:
+top1, bot1 = lifxcmeans.getTopBot(s1, sq1_old, 1e-6, 1e5/2, p1_old, 0.5)
+top2, bot2 = lifxcmeans.getTopBot(s2, sq2_old, 1e-6, 1e5/2, p2_old, 0.5)
 
