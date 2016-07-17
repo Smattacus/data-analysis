@@ -5,7 +5,12 @@
 #
 
 import numpy as np
+import h5py
 
+
+def parseSynchFileChannel(filename, chan = 0, offset=0x8000):
+    do = np.array(h5py.File(filename, 'r')['SIS3316_Channel_' + str(chan)])
+    return parseSynchData(do, offset)
 
 def parseSynchData(synch_data, offset=0x8000):
     '''
