@@ -750,8 +750,12 @@ def doppv(wl, wl0):
         INPUTS:
         wl      :       Wavelength that is measured of the process.
         wl0     :       Original wavelength of the process at rest.
+
+        In LIF, wl0 is the wavelength of the transition. wl is the wavelength of the laser.
+        The resulting velocity is positive if the ion is moving towards the laser,
+        and negative if the ion is moving away from the laser.
     '''
-    return (c_cgs * wl / wl0 - c_cgs)
+    return c_cgs * wl / wl0 - c_cgs
 
 def get_xy_distlimit(x, y, d):
     '''
