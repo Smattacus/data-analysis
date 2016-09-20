@@ -142,7 +142,7 @@ def uxcorr_ndim(x1, x2, axis=-1):
     OUTPUTS:
         xcfull  :       2D array of cross correlations.
 
-    For example, if I have two 2D arrays of 50 cross correlations, which are
+    For example, if I have two 2D arrays of 50 time series data, which are
     t1s.shape = (50,800000) and t2s.shape = (50, 800000), then 
 
     xc = uxcorr_ndim(t1s, t2s, axis=1)
