@@ -54,9 +54,9 @@ def get_velocity(wl, x_bgs, y_bgs, wl_lthresh, wl_hthresh, p=False):
 def make_plots(filename, wl_bgthresh, wl_vthreshes):
     '''
     This is a helper function for making f0 and f1 plots.
-    :param filename:
-    :param wl_bgthresh:
-    :param wl_vthreshes:
+    :param filename: Name of the file to read.
+    :param wl_bgthresh: Upper limit for background estimation. Starts from left side.
+    :param wl_vthreshes: tuple of (wavelength_left, wavelength_lelft) for 0 point estimation.
     :return:
     '''
     (wl, x, y, p) = read_lockin(filename)
@@ -91,7 +91,7 @@ def make_plots(filename, wl_bgthresh, wl_vthreshes):
     return (wl, x, y, x_bgs, y_bgs, x_zr, y_zr, v, wl0)
 
 
-def make_sweep_plots(filename, freqs, fignum=1):
+def make_sweep_plots(filename, freqs, fignum=1, npoints = 2000, sweep=False):
     '''
     Makes plots for a sweep over antenna frequency, where p is the voltage for
     current sweep frequency.
@@ -103,35 +103,46 @@ def make_sweep_plots(filename, freqs, fignum=1):
     figure(fignum, figsize=(8,8))
     clf()
     subplot(221)
-    plot(p, x)
-    plot(p, y)
-    plot(p, np.abs(x + 1j * y))
+    f = gen_freq_axis(p, npoints, freqs[0], freqs[1])
+    plot(f, x,'.')
+    plot(f, y, '.')
+    plot(f, np.abs(x + 1j * y), '.')
     xlabel('Sweep voltage (V)')
     ylabel('Lock in signal')
     title('Raw Sweep Data')
     legend(['Real', 'Imag', 'Rvec'])
     subplot(222)
-    plot(p, np.angle(x + 1j * y))
-    xlabel('Sweep Voltage (V)')
-    ylabel('Phase (rad)')
-    title('Raw Phase Data')
+    if sweep == False:
+        plot(f, np.angle(x + 1j * y))
+        xlabel('Sweep Voltage (V)')
+        ylabel('Phase (rad)')
+        title('Raw Phase Data')
+    elif sweep == True:
+        plot(p)
+        plot(f * np.max(p) / freqs[1])
+        xlabel('Sweep #')
+        ylabel('Sweep Ramp Voltage')
+        legend(['Raw Voltage', 'Constructed Sweep'])
+        title('Constructed Sweep and Actual Sweep')
     subplot(223)
-    (pc, xc) = clean.clean(p, y)
-    (pc, yc) = clean.clean(p, x)
-    sw = np.linspace(freqs[0], freqs[1], pc.shape[0])
-    plot(sw, xc)
-    plot(sw, yc)
+    (fc, xc) = clean.clean(f, y)
+    (fc, yc) = clean.clean(f, x)
+    plot(fc, xc)
+    plot(fc, yc)
     xlabel('Frequency')
     ylabel('Lockin response(v)')
     title('Cleaned Lock in Response')
     legend(['Real', 'Imag'])
     subplot(224)
     phac = np.angle(xc + 1j * yc)
-    plot(sw, np.unwrap(phac))
+    plot(fc, np.unwrap(phac))
     xlabel('Frequency')
     ylabel('Phase (rad)')
     title('Cleaned Phase')
-    return(x, y, p, xc, yc, sw)
+    return(x, y, p, xc, yc, fc)
+
+
+
 
 def rotate_zero(x, y):
     '''
@@ -145,3 +156,26 @@ def rotate_zero(x, y):
     zsa = np.angle(zs)
     zr = z / np.exp(1j * zsa)
     return zr
+
+def gen_freq_axis(sw_v, npoints, fmin, fmax):
+    '''
+    Generates a frequency axis based on the sweep voltage. This function generates
+    a linear range of frequencies to remove the noise which has been introduced by
+    measuring the voltage.
+
+    :param sw_v: sweep voltage array.
+    :param npoints: Number of points per sweep, after which it repeats.
+    :param fmin: Minimum sweep frequency.
+    :param fmax: Maximum sweep frequency.
+    :return:
+    '''
+    #Find the point where the sweep drops back down to fmin.
+    sd = np.diff(sw_v)
+    j = np.where(sd == np.min(sd))[0]
+    if j > npoints:
+        j = j % npoints
+    #We want to create an array such that it starts at the same point in
+    #the sweep as the sw_v array
+    flarge = np.tile(np.linspace(fmin, fmax, npoints), np.ceil(sw_v.shape[0] / npoints) + 1)
+    f = flarge[npoints - (j+1):npoints - (j+1) + sw_v.shape[0]]
+    return f
