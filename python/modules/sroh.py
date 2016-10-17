@@ -5,6 +5,20 @@ import numpy as np
 import clean
 import spec
 
+############################################################
+# Stuff for the SVD distribution function first shot on
+# 10 - 02 - 2016.
+############################################################
+
+def getMainDistPoints():
+    path = '/home/sean/XCMeans/10-02-2016/'
+    
+
+
+############################################################
+# Stuff for the Big Data Run from 4/2015
+############################################################
+
 def getDiodePoints():
     '''
     Returns the diode points from the logbook.

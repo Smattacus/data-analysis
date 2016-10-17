@@ -39,7 +39,7 @@ class cls_vcorrset:
         self.diode_v = z.doppv(self.diode_wl, cdi)
 
         return
-        
+
     def loadMats(self, tc = 1, tstep = 1e-5, noscale = False):
         '''
             Populates a 21 x (2 * N - 1) self.xcorrs numeric array by reading the .mat files
@@ -308,6 +308,21 @@ class cls_vcorrset:
         '''
         Displays the mesh of phase plots.
         '''
+
+
+#For analyzing the velocity correlation data, let's create a derived class starting from
+#the above class. We'll redefine the necessary methods in order to have it construct properly.
+
+class var_vcorrset(cls_vcorrset):
+
+    def __init__(self, tail=False):
+        '''
+        Constructs the class for examining variance and SVD of the velocity distribution function. Set
+        tail = True in order to also load the files corresponding to the tail of the velocity distribution function.
+        :param tail:
+        '''
+
+
 
 def createGrid(x, y, z):
     '''
