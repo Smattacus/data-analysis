@@ -321,6 +321,10 @@ class var_vcorrset(cls_vcorrset):
         tail = True in order to also load the files corresponding to the tail of the velocity distribution function.
         :param tail:
         '''
+        self.dfl = getMainDistPoints()
+        #Create wavelength pairs from the main distribution of points filelist.
+        wl_pairs = [(np.float64(x[3:13]), np.float64(x.split('.')[1][-3:] +'.' +
+                        x.split('.'[2]))) for x in self.dfl]
 
 
 
