@@ -321,12 +321,23 @@ class var_vcorrset(cls_vcorrset):
         tail = True in order to also load the files corresponding to the tail of the velocity distribution function.
         :param tail:
         '''
-        self.dfl = getMainDistPoints()
+        self.dfl = sroh.getMainDistPoints()
         #Create wavelength pairs from the main distribution of points filelist.
-        wl_pairs = [(np.float64(x[3:13]), np.float64(x.split('.')[1][-3:] +'.' +
-                        x.split('.'[2]))) for x in self.dfl]
+        wl_pairs = [(np.float64(x.split('/')[-1][3:13]), np.float64(x.split('.')[1][-3:] +'.' +
+                        x.split('.')[2])) for x in self.dfl]
+        wl_pairs = np.array(wl_pairs)
+        self.wl_pairs = wl_pairs
+        self.diode_wl = np.round(wl_pairs[:,1], decimals=5)
+        self.dye_wl = np.round(wl_pairs[:,0], decimals=6)
 
-
+    def normSpecs(self):
+        '''
+        Normalize the spectra according to each spectrum's DC component.
+        :return:
+        '''
+        self.gn = self.g
+        for x in range(49):
+            self.gn[x,:] = self.g[x,:] / self.g[x, 99999]
 
 def createGrid(x, y, z):
     '''

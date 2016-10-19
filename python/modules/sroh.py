@@ -34,13 +34,13 @@ def getMainDistPoints():
     path + 'Dye611.662436Diode668.616315.mat',
     path + 'Dye611.662436Diode668.616545.mat',
     path + 'Dye611.662436Diode668.616813.mat',
-    path + 'Dye611.663066Diode668.614286.mat',
     path + 'Dye611.663066Diode668.61429.mat',
     path + 'Dye611.663066Diode668.61455.mat',
     path + 'Dye611.663066Diode668.614803.mat',
     path + 'Dye611.663066Diode668.61560.mat',
     path + 'Dye611.663066Diode668.61632.mat',
     path + 'Dye611.663066Diode668.61655.mat',
+    path + 'Dye611.663066Diode668.616813.mat',
     path + 'Dye611.663663Diode668.614287.mat',
     path + 'Dye611.663663Diode668.614554.mat',
     path + 'Dye611.663663Diode668.614803.mat',
@@ -63,6 +63,7 @@ def getMainDistPoints():
     path + 'Dye611.664095Diode668.61654.mat',
     path + 'Dye611.664095Diode668.616813.mat',
     ]
+    distlist.sort()
     return distlist
 
 ############################################################
