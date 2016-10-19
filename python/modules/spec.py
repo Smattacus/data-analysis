@@ -3,10 +3,27 @@
 #normalization backwards. These methods change it so that we normalize with
 #1/sqrt(N) in each direction and also generates a frequency array alongside it.
 
-import scipy as sp
-from scipy import fftpack as fp
+#We have to load the scipy packs anyways since
+#fftshift isn't in the accelerate.mkl.fftpack
+from scipy import fftpack as spfp
+
+#Check for multithreading. If it's not available,
+#just use the normal numpy fft routines.
+import imp
+try:
+    imp.find_module('accelerate')
+    found = True
+except ImportError:
+    found = False
+if found:
+    import accelerate.mkl.fftpack as fp
+else:
+    from scipy import fftpack as fp
+
 from numpy import size, linspace
 from math import sqrt
+
+
 
 #These functions assume 1d arrays.
 
@@ -26,10 +43,10 @@ OUTPUTS:
     """
     n = x.shape[axis]
     f0 = 1/abs(n * dt)
-    P = sp.fftpack.fft(x, axis=axis)/sqrt(n)
+    P = fp.fft(x, axis=axis)/sqrt(n)
     #Generate an array 1:N, subtract (N + 1) /2 if odd, (N+2)/2 if even.
     f = (linspace(1, n, n) - (n + (1 + (n % 2 ==0 )))/2) * f0
-    P = fp.fftshift(P, axes=axis)
+    P = spfp.fftshift(P, axes=axis)
     return f, P
 
 def spec_dct(x, dt):
@@ -49,10 +66,10 @@ OUTPUTS:
     """
     n = size(x)
     f0 = 1/abs(n * dt)
-    P = sp.fftpack.rfft(x)/sqrt(n)
+    P = fp.rfft(x)/sqrt(n)
     #Generate an array 1:N, subtract (N + 1) /2 if odd, (N+2)/2 if even.
     f = (linspace(1, n, n) - (n + (1 + (n % 2 ==0 )))/2) * f0
-    P = fp.fftshift(P)
+    P = spfp.fftshift(P)
     return f, P
 
 def ispec(x, df):
@@ -71,7 +88,7 @@ OUTPUTS:
 """
     n = size(x)
     T = 1/abs(df)
-    g = sp.fftpack.ifft(fp.ifftshift(x)) * sqrt(n)
+    g = fp.ifft(spfp.ifftshift(x)) * sqrt(n)
     t = (linspace(0, n-1, n)) * T / n
     return t, g
     
@@ -104,7 +121,7 @@ def spec2d(x, dtx, dty):
     P = fp.fft2(x) / sqrt(n1) / sqrt(n2)
     f1 = (linspace(1, n1, n1) - (n1 + (1 + (n1 % 2 ==0 )))/2) * f0_1
     f2 = (linspace(1, n2, n2) - (n2 + (1 + (n2 % 2 ==0 )))/2) * f0_2
-    P = fp.fftshift(P)
+    P = spfp.fftshift(P)
     return f1, f2, P
 
 def ispec2d(g, df1, df2):
@@ -121,7 +138,7 @@ def ispec2d(g, df1, df2):
     """
     n1 = g.shape[0]
     n2 = g.shape[1]
-    X = fp.ifftshift(g)
+    X = spfp.ifftshift(g)
     X = fp.ifft2(X) * sqrt(n1) * sqrt(n2)
     t0_1 = 1 / abs(n1 * df1)
     t0_2 = 1 / abs(n2 * df2)
