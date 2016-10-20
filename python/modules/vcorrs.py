@@ -6,6 +6,7 @@
 
 import numpy as np, scipy as sp, scipy.io as io, scipy.interpolate as interp
 from matplotlib import mlab, pyplot as plt
+from numpy import linalg as la
 
 import sroh, spec, clean, zeeman as z
 
@@ -326,18 +327,53 @@ class var_vcorrset(cls_vcorrset):
         wl_pairs = [(np.float64(x.split('/')[-1][3:13]), np.float64(x.split('.')[1][-3:] +'.' +
                         x.split('.')[2])) for x in self.dfl]
         wl_pairs = np.array(wl_pairs)
-        self.wl_pairs = wl_pairs
-        self.diode_wl = np.round(wl_pairs[:,1], decimals=5)
-        self.dye_wl = np.round(wl_pairs[:,0], decimals=6)
+        self.wl_pairs = np.reshape(wl_pairs, (7, 7, 2))
+        self.diode_wl = np.reshape(np.round(wl_pairs[:,1], decimals=5), (7,7))
+        self.dye_wl = np.reshape(np.round(wl_pairs[:,0], decimals=6), (7,7))
 
-    def normSpecs(self):
+    def normSpecs(self, normind=99999):
         '''
         Normalize the spectra according to each spectrum's DC component.
         :return:
         '''
         self.gn = self.g
         for x in range(49):
-            self.gn[x,:] = self.g[x,:] / self.g[x, 99999]
+            self.gn[x,:] = self.g[x,:] / self.g[x, normind]
+
+    def reshapeSpecs(self):
+        self.grs = np.reshape(self.g, (7,7, self.g.shape[-1]))
+        try:
+            self.gnrs = np.reshape(self.gn, ((7, 7, self.gn.shape[-1])))
+        except AttributeError:
+            return
+
+
+
+    def integratePower(self, fl, fh, norm=True):
+        '''
+        Integrate a range of frequencies in the spectrum. This is going to just be an
+        addition under the normalized power spectrum.
+        :param fl: lower frequency
+        :param fh: upper frequency
+        :param norm=True: Whether or not to use the normalized spectra.
+        :return: a 7x7 matrix of integrated values corresponding to the wl_pairs.
+        '''
+        fi = np.where((self.f >= fl) & (self.f <= fh))
+        if norm == True:
+            ints = np.sum(np.abs(self.gnrs[:,:,fi[0]]), axis=2)
+        else:
+            ints = np.sum(np.abs(self.grs[:,:, fi[0]]), axis=2)
+        return ints
+
+    def createSVDs(self, fl, fh):
+        '''
+        Create SVD matrices for frequencies from fl to fh.
+        :return:
+        '''
+        fmini = np.where(np.min(np.abs(self.f - fl)) == np.abs(self.f - fl))
+        fmaxi = np.where(np.min(np.abs(self.f - fh)) == np.abs(self.f - fh))
+        self.svd = [la.svd(np.abs(self.grs[:,:,x])) for  x in range(fmini[0][0], fmaxi[0][0])]
+
 
 def createGrid(x, y, z):
     '''
