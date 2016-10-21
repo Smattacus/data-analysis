@@ -374,7 +374,7 @@ class var_vcorrset(cls_vcorrset):
         '''
         fmini = np.where(np.min(np.abs(self.f - fl)) == np.abs(self.f - fl))
         fmaxi = np.where(np.min(np.abs(self.f - fh)) == np.abs(self.f - fh))
-        self.svdc = [la.svd(self.grs[:, :, x]) for x in rangee(fmini[0][0], fmaxi[0][0])]
+        self.svdc = [la.svd(self.grs[:, :, x]) for x in range(fmini[0][0], fmaxi[0][0])]
 
     def createSVDs(self, fl, fh):
         '''
@@ -396,7 +396,7 @@ class var_vcorrset(cls_vcorrset):
         if complex==False:
             eg = np.vstack([x[2].T[:, sv] for x in self.svd]).T
         elif complex==True:
-            eg = np.vstack([np.matrix(x[2]).H[:,sv] for x in self.svdc]).T
+            eg = np.vstack([np.matrix(x[2]).H[:, sv] for x in self.svdc]).T
         return eg
 
 
