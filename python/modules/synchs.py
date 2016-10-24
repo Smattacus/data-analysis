@@ -31,6 +31,8 @@ def parseSynchData(synch_data, offset=0x8000):
                             double voltages.
         timestamps:     Array of timestamp values corresponding to the averaged samples.
     '''
+    #Cast as an arrow just in case it hasn't already been done.
+    synch_data = np.array(synch_data)
     t3 = synch_data[1::10]
     t1 = synch_data[2::10]
     t2 = synch_data[3::10]
@@ -39,8 +41,9 @@ def parseSynchData(synch_data, offset=0x8000):
     #Now, take care of the data itself:
     avs1 = synch_data[8::10]
     avs2 = synch_data[9::10]
-    avs1 = (avs1.astype(float) - offset) / np.iinfo(np.uint16).max
-    avs2 = (avs2.astype(float) - offset) / np.iinfo(np.uint16).max
+    #Subtract offset, divide by max uint value, and rescale over 5V range:
+    avs1 = (avs1.astype(float) - offset) / 0xffff * 5.0
+    avs2 = (avs2.astype(float) - offset) / 0xffff * 5.0
     avs = np.vstack((avs1, avs2)).T
     return avs, timestamps
 
