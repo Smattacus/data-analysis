@@ -399,7 +399,22 @@ class var_vcorrset(cls_vcorrset):
             eg = np.vstack([np.matrix(x[2]).H[:, sv] for x in self.svdc]).T
         return eg
 
-
+    def reverseEigenSigns(self, evecs, checkIndex, diffThresh = 0.1):
+        '''
+        This is a helper function for fixing the issues with the eigenvectors wandering by negative signs.
+        I have to take a little bit of an empirical approach with this for now. I'll just have it test
+        each step's delta vs the delta with a negative sign - if it's noticeably smaller, it'll switch the
+        sign of the entire eigenvector.
+        Hopefully this will clear up the strange behavior that the normal eigenvectors are giving us.
+        :param evecs:
+        :return:
+        '''
+        for x in range(evecs.shape[1] - 1):
+            c = evecs[checkIndex, x]
+            n = evecs[checkIndex, x  + 1]
+            if np.abs(n - c) > diffThresh:
+                evecs[:, x + 1] *= -1
+        return
 
 def createGrid(x, y, z):
     '''
