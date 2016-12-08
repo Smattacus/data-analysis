@@ -1,8 +1,8 @@
 #Functions for calculating the splitting of Zeeman lines.
 #Assumes anomolous Zeeman effect.
 
-h_cgs = 6.62606957e-27
-c_cgs = 2.99792456e10
+h_cgs = 6.62606885e-27
+c_cgs = 2.99792458e10
 o_cgs = 9.27400968e-21
 
 import numpy as np
@@ -10,6 +10,7 @@ from numpy import linspace
 import clean
 import scipy as sp
 import spec
+from scipy import fftpack as fp
 from scipy.spatial import distance as dist
 
 #NOTE this value is for adjusting the windowing in the functions
@@ -117,16 +118,16 @@ def Transitions(Ez_i, Mz_i, RS_i, Ez_f, Mz_f, RS_f):
             #delta_m = 0 is constrained to Mz_f m values.
             sdiff = np.size(Mz_i) - np.size(Mz_f)
             Etrans_0 = Ez_i[sdiff / 2:-sdiff/2] - Ez_f
-            Mpairs_0 = zip(Mz_i[sdiff / 2: -sdiff/ 2], Mz_f)
+            Mpairs_0 = list(zip(Mz_i[sdiff / 2: -sdiff/ 2], Mz_f))
         elif np.size(Mz_i) < np.size(Mz_f):
             #delta_m = 0 is constrained to Mz_o m values.
             sdiff = np.size(Mz_f) - np.size(Mz_i)
             Etrans_0 = Ez_i - Ez_f[sdiff/2:-sdiff/2]
-            Mpairs_0 = zip(Mz_i, Mz_f[sdiff/2:-sdiff/2]) 
+            Mpairs_0 = list(zip(Mz_i, Mz_f[sdiff/2:-sdiff/2]))
         else:
             #They are the same size.
             Etrans_0 = Ez_i - Ez_f
-            Mpairs_0 = zip(Mz_i, Mz_f)
+            Mpairs_0 = list(zip(Mz_i, Mz_f))
         Wtrans_0 = 1 / Etrans_0
         Ptrans_0 = Wtrans_0 * 0
     #Handle the next transitions.
@@ -360,6 +361,7 @@ def Zeeman_Lines(RSi, RSf, Ei, Ef, wavelengths, P, B, tls, velocity = 0,
         Ef      :   Energy (cm-1) for the final level.
         wavelengths :   Wavelength (nm) for the levels.
         P       :   Polarization of desired lines. 0, 1, -1.
+        B       :   Magnetic field in Gauss.
         tls     :   tuple of the mean lifetime of the initial and final levels
                     (ti, tf). Just one element is fine (ti or tf).
     """
@@ -381,7 +383,7 @@ def Zeeman_Lines(RSi, RSf, Ei, Ef, wavelengths, P, B, tls, velocity = 0,
     elif indiv == True:
         #return a list of each individual Lorentzian.
         ls = []
-        for x in zip(Ampts, Cents):
+        for x in zip(Amps, Cents):
             ls.append(ZL(x[0], x[1], tls, wavelengths, velocity=velocity))
         return ls
 
@@ -648,9 +650,9 @@ def Diode_Values():
     tf = 1.0/1.326e8
     return (RSi, RSf, Ei, Ef, (tf,))
 
-def ZeemanSpec_Padded(wld, s, P, B, RSi, RSf, Ei, Ef, ts, roll=0, amps = 1):
+def ZeemanSpec_Padded(wld, s, P, B, RSi, RSf, Ei, Ef, ts, roll=0, amps = 1, padx=10):
     """
-        Creates a padded Zeeman array with 10x + 1 the number of elements of
+        Creates a padded Zeeman array with padx * n + 1 the number of elements of
         the original wavelength array, finds a spectrum, then returns the
         spectrum with the original number of points. This is so that
         undersampling the Zeeman spectrum is not a problem in deconvolution.
@@ -669,13 +671,14 @@ def ZeemanSpec_Padded(wld, s, P, B, RSi, RSf, Ei, Ef, ts, roll=0, amps = 1):
         roll    -   (Optional) # to roll the padded wavelength array.
         amp_scale   -   (float, tuple, Optional) Tuple of relative scalings for the groups of
                          amplitudes. Each element corresponds to the tuple elements of P.
+        padx = 10   -   Scaling factor for padded array wavelength array to make.
         OUTPUTS:
         (ZPSC, wldp, ZP)
         ZPSC    -   Zeeman spectrum reduced back to wld size.
         wldp    -   Padded wavelength array.
         ZP      -   Padded Zeeman profile.
     """
-    wldp = np.linspace(wld[0], wld[-1], 10 * (np.size(wld) - 1) + np.size(wld))
+    wldp = np.linspace(wld[0], wld[-1], padx * (np.size(wld) - 1) + np.size(wld))
     lns = wldp * 0 
     even = 1 - np.size(wld) % 2
     if amps == 1:
@@ -684,14 +687,14 @@ def ZeemanSpec_Padded(wld, s, P, B, RSi, RSf, Ei, Ef, ts, roll=0, amps = 1):
     else:
         for x in zip(P, amps):
             lns += x[1] * Zeeman_Lines(RSi, RSf, Ei, Ef, wldp, x[0], B, ts)
-    lns = lns / np.max(lns) * np.max(s)
+    lns = lns / np.max(lns) * np.max(np.abs(s))
     [f, gl] = spec.spec(lns, wldp[1] - wldp[0])
     gl = gl * np.sqrt(float(np.size(gl)) / float(np.size(wld)))
     #Grab the middle n elements. Adjust the indices for whether the size of 
     #wld is odd or even.
     #NB: np.size(x) / 2 is truncated if x is odd.
-    glc = gl[(np.size(gl) / 2) - (np.size(wld)) / 2 :
-            (np.size(gl) / 2 - (1 - np.size(wld) % 2)) + (np.size(wld)) / 2 + 1]
+    glc = gl[np.floor((np.size(gl) / 2)) - np.floor((np.size(wld)) / 2) :
+            np.floor((np.size(gl) / 2) - (1 - np.size(wld) % 2)) + np.floor((np.size(wld)) / 2) + 1]
     return (glc, wldp, lns)
 
 def ZeemanSpec_Padded_Grid(grid, scale_specs, P, B, RSi, RSf, Ei, Ef, ts, roll=0,
@@ -727,7 +730,6 @@ def ZeemanSpec_Padded_Grid(grid, scale_specs, P, B, RSi, RSf, Ei, Ef, ts, roll=0
     scales = [np.max(x) / np.max(scale_specs[0]) for x in scale_specs]
     return (glc, wldp, lns, scales)
 
-
 def fga(x, params):
     A = params[0]
     M = params[1]
@@ -755,7 +757,7 @@ def doppv(wl, wl0):
         The resulting velocity is positive if the ion is moving towards the laser,
         and negative if the ion is moving away from the laser.
     '''
-    return c_cgs * wl / wl0 - c_cgs
+    return (c_cgs * wl / wl0 - c_cgs)
 
 def get_xy_distlimit(x, y, d):
     '''
@@ -794,5 +796,17 @@ def get_xy_distlimit(x, y, d):
                 indices = indices + [y]
     return (points, indices)
         
-    
-    
+
+def deconvolve(wl, R, linevals, amps, B, P, pad):
+    '''
+    Quick return which deconvolves an f0 with the laser information given by linevals.
+    :param wl:
+    :param R:
+    :return:
+    '''
+    [gsp, wlp, zp] = ZeemanSpec_Padded(wl, R, P, B, *linevals, amps =amps, padx=pad)
+    [f, g] = spec.spec(R, 1)
+    gdc = g / gsp
+    [t, Rdc] = spec.ispec(gdc, 1)
+    return (fp.fftshift(Rdc), (gsp, wlp, zp))
+
