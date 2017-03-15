@@ -383,7 +383,15 @@ class var_vcorrset(cls_vcorrset):
         '''
         fmini = np.where(np.min(np.abs(self.f - fl)) == np.abs(self.f - fl))
         fmaxi = np.where(np.min(np.abs(self.f - fh)) == np.abs(self.f - fh))
-        self.svd = [la.svd(np.abs(self.grs[:,:,x])) for  x in range(fmini[0][0], fmaxi[0][0])]
+        self.svd = [la.svd(np.abs(self.grs[:,:,x])) for x in range(fmini[0][0], fmaxi[0][0])]
+
+    def getSVs(self, sv):
+        '''
+        Gets an array of singular values corresponding to the desired SV.
+        :param sv: Ranges from 0 to 6.
+        :return:
+        '''
+        return(np.array([x[1][sv] for x in self.svd]))
 
     def getEigenVecs(self, sv, complex=False):
         '''
@@ -411,7 +419,7 @@ class var_vcorrset(cls_vcorrset):
         '''
         for x in range(evecs.shape[1] - 1):
             c = evecs[checkIndex, x]
-            n = evecs[checkIndex, x  + 1]
+            n = evecs[checkIndex, x + 1]
             if np.abs(n - c) > diffThresh:
                 evecs[:, x + 1] *= -1
         return
@@ -429,3 +437,18 @@ def createGrid(x, y, z):
     Ns = xx.shape[0] * xx.shape[1]
     zc = np.vstack([np.reshape(xx, Ns), np.reshape(yy, Ns), np.reshape(z, Ns)])
     return zc
+
+#We have another dataset with the full SVD 121 point distribution. Let's make an object for that.
+
+class first_full_vcorrset(cls_vcorrset):
+
+    def __init__(self):
+        self.dfl = sroh.getLargeDistPoints()
+        #Create wavelength pairs from the main distribution of points filelist.
+        wl_pairs = [(np.float64(x.split('/')[-1][3:13]), np.float64(x.split('.')[1][-3:] +'.' +
+                        x.split('.')[2])) for x in self.dfl]
+        wl_pairs = np.array(wl_pairs)
+        self.wl_pairs = np.reshape(wl_pairs, (11, 11, 2))
+        self.diode_wl = np.reshape(np.round(wl_pairs[:,1], decimals=5), (11,11))
+        self.dye_wl = np.reshape(np.round(wl_pairs[:,0], decimals=6), (11,11))
+        return
