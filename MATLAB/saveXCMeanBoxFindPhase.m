@@ -34,10 +34,12 @@ D1 = (T1 - B1) * 2;
 D2 = (T2 - B2) * 2;
 ave1 = mean(D1.');
 ave2 = mean(D2.');
+bg_ave1 = mean(B1.');
+bg_ave2 = mean(B2.');
 remove_ind = [];
 %Remove data files that potentially have low LIF counts.
 for i=1:size(D1,1)
-    if ave1(i) < 0.1 || ave2(i) < 0.1
+    if ave1(i) < 0.01 || ave2(i) < 0.01
         display(sprintf('File %s omitted due to low LIF count.', list_data(i).name));
         display(sprintf('PMT1 = %d\nPMT2 = %d', ave1(i), ave2(i)));
         remove_ind = [remove_ind, i];
@@ -53,6 +55,9 @@ xcs = zeros(size(D1, 1), size(D1,2) * 2 - 1);
 xcs_lifscaled = xcs;
 ac_ch1 = xcs;
 ac_ch2 = xcs;
+%Adding this in 3 Mar 2017 to estimate background correlations
+%and subtract them. SWM.
+xcs_background = xcs;
 D1_scale = D1 * 0;
 D2_scale = D2 * 0;
 for i=1:size(D1, 1);
@@ -60,6 +65,8 @@ for i=1:size(D1, 1);
    D2(i,:) = D2(i,:) - mean(D2(i,:));
    xcs(i,:) = xcorr(D1(i,:), D2(i,:), 'unbiased');
    xcs_lifscaled(i,:) = xcorr(D1(i,:) / ave1(i), D2(i,:) / ave2(i), 'unbiased');
+   %3 Mar 2017
+   xcs_background(i,:) = xcorr((B1(i,:) - bg_ave1(i))/bg_ave1(i), (B2(i,:) - bg_ave2(i))/bg_ave2(i), 'unbiased');
    ac_ch1(i,:) = xcorr(D1(i,:), 'unbiased');
    ac_ch2(i,:) = xcorr(D2(i,:), 'unbiased');
    D1_scale(i,:) = D1(i,:) / ave1(i);
@@ -75,7 +82,7 @@ ac_ch1_std = std(ac_ch1);
 ac_ch2_std = std(ac_ch2);
 
 save(savename, 'xcmean', 'xc_std', 'ac_ch1_mn', 'ac_ch2_mn', 'ac_ch1_std', ...
-    'ac_ch2_std', 'ave1', 'ave2', 'xcsmean_lifscaled', 'xc_std_lifscaled', 'list_data');
+    'ac_ch2_std', 'ave1', 'ave2', 'xcsmean_lifscaled', 'xc_std_lifscaled', 'xcs_background', 'bg_ave1','bg_ave2','list_data');
 %Secondary: Save the normalized D1 and D2 matrices.
 savename_diffs = strrep(savename, '.mat', '_DiffArrays.mat');
 save(savename_diffs, 'D1_scale', 'D2_scale', 'ave1', 'ave2');
