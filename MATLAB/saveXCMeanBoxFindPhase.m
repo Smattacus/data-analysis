@@ -58,6 +58,8 @@ ac_ch2 = xcs;
 %Adding this in 3 Mar 2017 to estimate background correlations
 %and subtract them. SWM.
 xcs_background = xcs;
+xc_bg1_lif2 = xcs;
+xc_bg2_lif1 = xcs;
 D1_scale = D1 * 0;
 D2_scale = D2 * 0;
 for i=1:size(D1, 1);
@@ -67,6 +69,8 @@ for i=1:size(D1, 1);
    xcs_lifscaled(i,:) = xcorr(D1(i,:) / ave1(i), D2(i,:) / ave2(i), 'unbiased');
    %3 Mar 2017
    xcs_background(i,:) = xcorr((B1(i,:) - bg_ave1(i))/bg_ave1(i), (B2(i,:) - bg_ave2(i))/bg_ave2(i), 'unbiased');
+   xc_bg1_lif2(i,:) = xcorr( (B1(i,:) - bg_ave1(i)) / bg_ave1(i), (D2(i,:) / ave2(i)), 'unbiased')
+   xc_bg2_lif1(i,:) = xcorr( (D1(i,:) / ave1(i)), (B2(i,:) - bg_ave2(i)) / bg_ave2(i), 'unbiased')
    ac_ch1(i,:) = xcorr(D1(i,:), 'unbiased');
    ac_ch2(i,:) = xcorr(D2(i,:), 'unbiased');
    D1_scale(i,:) = D1(i,:) / ave1(i);
@@ -80,9 +84,17 @@ ac_ch1_mn = mean(ac_ch1);
 ac_ch2_mn = mean(ac_ch2);
 ac_ch1_std = std(ac_ch1);
 ac_ch2_std = std(ac_ch2);
+xcm_bg12 = mean(xcs_background);
+xcm_bg12_std = std(xcs_background);
+xcm_bg1_lif2 = mean(xc_bg1_lif2);
+xcm_bg1_lif2_std = std(xc_bg1_lif2);
+xcm_bg2_lif1 = mean(xc_bg2_lif1);
+xcm_bg2_lif1_std = std(xc_bg2_lif1);
 
 save(savename, 'xcmean', 'xc_std', 'ac_ch1_mn', 'ac_ch2_mn', 'ac_ch1_std', ...
-    'ac_ch2_std', 'ave1', 'ave2', 'xcsmean_lifscaled', 'xc_std_lifscaled', 'xcs_background', 'bg_ave1','bg_ave2','list_data');
+    'ac_ch2_std', 'ave1', 'ave2', 'xcsmean_lifscaled', 'xc_std_lifscaled', ...
+    'xcm_bg12', 'xcm_bg12_std','xcm_bg1_lif2', 'xcm_bg1_lif2_std', 'xcm_bg2_lif1', 'xcm_bg2_lif1_std', ...
+    'bg_ave1','bg_ave2','list_data');
 %Secondary: Save the normalized D1 and D2 matrices.
 savename_diffs = strrep(savename, '.mat', '_DiffArrays.mat');
 save(savename_diffs, 'D1_scale', 'D2_scale', 'ave1', 'ave2');
