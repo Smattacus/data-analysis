@@ -69,8 +69,8 @@ for i=1:size(D1, 1);
    xcs_lifscaled(i,:) = xcorr(D1(i,:) / ave1(i), D2(i,:) / ave2(i), 'unbiased');
    %3 Mar 2017
    xcs_background(i,:) = xcorr((B1(i,:) - bg_ave1(i))/bg_ave1(i), (B2(i,:) - bg_ave2(i))/bg_ave2(i), 'unbiased');
-   xc_bg1_lif2(i,:) = xcorr( (B1(i,:) - bg_ave1(i)) / bg_ave1(i), (D2(i,:) / ave2(i)), 'unbiased')
-   xc_bg2_lif1(i,:) = xcorr( (D1(i,:) / ave1(i)), (B2(i,:) - bg_ave2(i)) / bg_ave2(i), 'unbiased')
+   xc_bg1_lif2(i,:) = xcorr( (B1(i,:) - bg_ave1(i)) / bg_ave1(i), (D2(i,:) / ave2(i)), 'unbiased');
+   xc_bg2_lif1(i,:) = xcorr( (D1(i,:) / ave1(i)), (B2(i,:) - bg_ave2(i)) / bg_ave2(i), 'unbiased');
    ac_ch1(i,:) = xcorr(D1(i,:), 'unbiased');
    ac_ch2(i,:) = xcorr(D2(i,:), 'unbiased');
    D1_scale(i,:) = D1(i,:) / ave1(i);
